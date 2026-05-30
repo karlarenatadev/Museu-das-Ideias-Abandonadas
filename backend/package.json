@@ -7,6 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "build": "cd ../frontend && npm run build && cd ../backend",
+    "deploy": "npm run build && npm start",
     "test": "echo \"Testes? Essa é mais uma ideia abandonada!\" && exit 0"
   },
   "keywords": [
