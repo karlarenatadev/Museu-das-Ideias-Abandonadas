@@ -55,10 +55,10 @@ export default function IdeaForm() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-3 sm:px-5">
       {/* Formulário */}
-      <div className="bg-[#161020] border border-[rgba(180,140,255,0.15)] rounded-xl p-8 mb-6">
-        <div className="mb-6">
+      <div className="bg-[#161020] border border-[rgba(180,140,255,0.15)] rounded-xl p-12 sm:p-14 mb-8">
+        <div className="mb-10">
           <h2 className="font-['Cinzel'] text-2xl text-[#c4a8ff] mb-2">
             Confesse sua Ideia Abandonada
           </h2>
@@ -67,10 +67,10 @@ export default function IdeaForm() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Nome da Ideia */}
           <div>
-            <label className="block text-sm font-medium text-[#c4a8ff] mb-2">
+            <label className="block text-sm font-medium text-[#c4a8ff] mb-3">
               Nome da Ideia *
             </label>
             <input
@@ -80,14 +80,14 @@ export default function IdeaForm() {
               onChange={handleChange}
               required
               disabled={loading}
-              className="w-full px-4 py-3 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] placeholder-[#6a5c8a] focus:outline-none focus:border-[#7c5ce8] transition-colors disabled:opacity-50"
+              className="w-full px-6 py-4 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] placeholder-[#6a5c8a] focus:outline-none focus:border-[#7c5ce8] transition-colors disabled:opacity-50"
               placeholder="Ex: App de delivery de sonhos"
             />
           </div>
 
           {/* Categoria */}
           <div>
-            <label className="block text-sm font-medium text-[#c4a8ff] mb-2">
+            <label className="block text-sm font-medium text-[#c4a8ff] mb-3">
               Categoria *
             </label>
             <select
@@ -96,7 +96,7 @@ export default function IdeaForm() {
               onChange={handleChange}
               required
               disabled={loading}
-              className="w-full px-4 py-3 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] focus:outline-none focus:border-[#7c5ce8] transition-colors disabled:opacity-50"
+              className="w-full px-6 py-4 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] focus:outline-none focus:border-[#7c5ce8] transition-colors disabled:opacity-50"
             >
               <option value="">Selecione uma categoria...</option>
               <option value="App">📱 App</option>
@@ -112,7 +112,7 @@ export default function IdeaForm() {
 
           {/* Empolgação */}
           <div>
-            <label className="block text-sm font-medium text-[#c4a8ff] mb-2">
+            <label className="block text-sm font-medium text-[#c4a8ff] mb-3">
               Empolgação Inicial: <span className="text-[#e8b86d] font-bold">{formData.empolgacao}/5</span>
             </label>
             <div className="flex items-center gap-4">
@@ -133,7 +133,7 @@ export default function IdeaForm() {
 
           {/* Motivo do Abandono */}
           <div>
-            <label className="block text-sm font-medium text-[#c4a8ff] mb-2">
+            <label className="block text-sm font-medium text-[#c4a8ff] mb-3">
               Por que foi abandonada? *
             </label>
             <textarea
@@ -143,17 +143,17 @@ export default function IdeaForm() {
               required
               disabled={loading}
               rows="4"
-              className="w-full px-4 py-3 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] placeholder-[#6a5c8a] focus:outline-none focus:border-[#7c5ce8] transition-colors resize-none disabled:opacity-50"
+              className="w-full px-6 py-4 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] placeholder-[#6a5c8a] focus:outline-none focus:border-[#7c5ce8] transition-colors resize-none disabled:opacity-50"
               placeholder="Conte-nos a triste (ou hilária) história do abandono..."
             />
           </div>
 
           {/* Botões */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-3">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-[#7c5ce8] to-[#c4a8ff] text-white font-medium py-3 px-6 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-gradient-to-r from-[#7c5ce8] to-[#c4a8ff] text-white font-medium py-3.5 px-7 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -164,13 +164,13 @@ export default function IdeaForm() {
                 '🔮 Analisar Ideia'
               )}
             </button>
-            
+
             {(result || error) && (
               <button
                 type="button"
                 onClick={handleReset}
                 disabled={loading}
-                className="px-6 py-3 border border-[rgba(180,140,255,0.3)] text-[#c4a8ff] rounded-lg hover:bg-[rgba(180,140,255,0.1)] transition-colors disabled:opacity-50"
+                className="px-7 py-3.5 border border-[rgba(180,140,255,0.3)] text-[#c4a8ff] rounded-lg hover:bg-[rgba(180,140,255,0.1)] transition-colors disabled:opacity-50"
               >
                 Nova Análise
               </button>
@@ -181,7 +181,7 @@ export default function IdeaForm() {
 
       {/* Erro */}
       {error && (
-        <div className="bg-[#2d1a1a] border border-[rgba(224,96,96,0.3)] rounded-xl p-6 mb-6">
+        <div className="mb-6 rounded-xl border border-[rgba(224,96,96,0.35)] bg-[#2d1a1a] p-6">
           <div className="flex items-start gap-3">
             <span className="text-2xl">💀</span>
             <div>
