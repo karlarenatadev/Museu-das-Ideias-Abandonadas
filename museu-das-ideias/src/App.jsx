@@ -1,8 +1,9 @@
 import React from 'react';
+import IdeaForm from './components/IdeaForm';
+import ApiStatus from './components/ApiStatus';
 
 export default function App() {
   return (
-    // Fundo geral usando a sua cor --bg (#0f0b18) e fonte DM Sans
     <div className="min-h-screen bg-[#0f0b18] text-[#e8e0f5] font-['DM_Sans'] flex">
       
       {/* ─── SIDEBAR (Fixo na esquerda) ─── */}
@@ -20,9 +21,34 @@ export default function App() {
             </span>
           </div>
         </div>
-        {/* Aqui depois criaremos o componente de Menu */}
-        <div className="p-5 text-sm text-[#a898c8]">
-          [ Menu de Navegação Aqui ]
+        
+        {/* Menu de Navegação */}
+        <nav className="p-5 flex-1">
+          <ul className="space-y-2 text-sm">
+            <li>
+              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[rgba(180,140,255,0.1)] text-[#c4a8ff] hover:bg-[rgba(180,140,255,0.15)] transition-colors">
+                <span>🔮</span>
+                <span>Analisar Ideia</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#a898c8] hover:bg-[rgba(180,140,255,0.05)] transition-colors">
+                <span>📚</span>
+                <span>Acervo</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#a898c8] hover:bg-[rgba(180,140,255,0.05)] transition-colors">
+                <span>ℹ️</span>
+                <span>Sobre</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        {/* Status da API */}
+        <div className="p-5 border-t border-[rgba(180,140,255,0.15)]">
+          <ApiStatus />
         </div>
       </aside>
 
@@ -34,7 +60,7 @@ export default function App() {
           <div className="text-xs text-[#6a5c8a]">
             Museu das Ideias Abandonadas · Acervo vivo desde 2019
           </div>
-          <button className="relative text-lg text-[#a898c8]">
+          <button className="relative text-lg text-[#a898c8] hover:text-[#c4a8ff] transition-colors">
             🔔
             <div className="absolute top-0 right-0 w-2 h-2 bg-[#e06060] rounded-full border border-[#161020]"></div>
           </button>
@@ -52,6 +78,16 @@ export default function App() {
             <p className="text-[#a898c8] text-sm mb-6">
               Preservamos sonhos interrompidos, planos mirabolantes e projetos que não viraram realidade.
             </p>
+            <div className="flex items-center gap-4 text-xs text-[#6a5c8a]">
+              <div className="flex items-center gap-2">
+                <span>💀</span>
+                <span>+1.247 ideias catalogadas</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>🎭</span>
+                <span>Análise por IA</span>
+              </div>
+            </div>
           </div>
           {/* Estátua de fundo */}
           <div className="absolute right-10 top-0 bottom-0 flex items-center opacity-20 text-[160px] pointer-events-none sepia hue-rotate-180">
@@ -59,10 +95,15 @@ export default function App() {
           </div>
         </section>
 
-        {/* RESTANTE DO CONTEÚDO (Grid de ideias, Formulário, etc) */}
-        <section className="p-6">
-           <h2 className="font-['Cinzel'] text-2xl text-[#c4a8ff]">Próximos componentes virão aqui...</h2>
+        {/* FORMULÁRIO DE ANÁLISE */}
+        <section className="p-6 flex-1">
+          <IdeaForm />
         </section>
+
+        {/* FOOTER */}
+        <footer className="border-t border-[rgba(180,140,255,0.15)] p-4 text-center text-xs text-[#6a5c8a]">
+          <p>Desenvolvido com 💜 e um toque de sarcasmo existencial</p>
+        </footer>
 
       </main>
     </div>
