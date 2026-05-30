@@ -19,7 +19,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 dotenv.config();
 
 // Inicializa o Express
-const app = express();
+const app = express();  
 const PORT = process.env.PORT || 3001;
 
 // Configuração de diretórios para ES modules
