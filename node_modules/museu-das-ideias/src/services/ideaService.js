@@ -3,8 +3,6 @@
  * Gerencia todas as requisições relacionadas a ideias abandonadas
  */
 
-import { API_ENDPOINTS } from '../config/api';
-
 /**
  * Envia uma ideia para análise da IA
  * @param {Object} ideaData - Dados da ideia
@@ -17,7 +15,6 @@ import { API_ENDPOINTS } from '../config/api';
  */
 export async function analyzeIdea(ideaData) {
   try {
-    // Usar URL relativa para funcionar em qualquer ambiente
     const endpoint = '/api/analisar-ideia';
     
     const response = await fetch(endpoint, {
@@ -31,12 +28,19 @@ export async function analyzeIdea(ideaData) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Erro ao analisar ideia');
+      const errorMessage = data.error || `Erro ${response.status}: Falha ao analisar ideia`;
+      throw new Error(errorMessage);
     }
 
     return data.data; // Retorna apenas o objeto data
   } catch (error) {
-    console.error('Erro ao analisar ideia:', error);
+    console.error('❌ Erro ao analisar ideia:', error);
+    
+    // Melhora mensagem de erro para o usuário
+    if (error instanceof TypeError) {
+      throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando em http://localhost:3001');
+    }
+    
     throw error;
   }
 }
@@ -47,11 +51,15 @@ export async function analyzeIdea(ideaData) {
  */
 export async function checkApiHealth() {
   try {
-    // Usar URL relativa para funcionar em qualquer ambiente
-    const response = await fetch('/api/health');
+    const response = await fetch('/api/health', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
     return response.ok;
   } catch (error) {
-    console.error('API offline:', error);
+    console.error('❌ API offline:', error);
     return false;
   }
 }
