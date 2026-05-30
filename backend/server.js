@@ -11,6 +11,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Carrega variáveis de ambiente do arquivo .env
@@ -20,13 +22,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Configuração de diretórios para ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendPath = path.join(__dirname, '../frontend/dist');
+
 // Middlewares
 app.use(cors()); // Permite requisições do frontend
 app.use(express.json()); // Parse de JSON no body das requisições
 
+// Servir arquivos estáticos do frontend
+app.use(express.static(frontendPath));
+
 // Inicializa o cliente do Google Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 /**
  * Rota de health check para verificar se o servidor está rodando
@@ -148,9 +158,15 @@ Seja criativa, poética e levemente cruel - mas sempre termine com uma nota de e
  * Rota 404 - Captura rotas não encontradas
  */
 app.use((req, res) => {
-  res.status(404).json({
-    error: 'Esta rota também foi abandonada... assim como suas ideias! 💀'
-  });
+  // Se for uma requisição de API, retorna erro 404
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({
+      error: 'Esta rota também foi abandonada... assim como suas ideias! 💀'
+    });
+  }
+  
+  // Caso contrário, serve o index.html (SPA fallback)
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 /**

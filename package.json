@@ -1,0 +1,26 @@
+{
+  "name": "museu-das-ideias-abandonadas",
+  "version": "1.0.0",
+  "description": "Museu das Ideias Abandonadas - Análise de ideias com IA",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run dev --workspace=backend",
+    "build": "npm run build --workspace=frontend",
+    "start": "npm start --workspace=backend",
+    "deploy": "npm run deploy --workspace=backend",
+    "install-all": "npm install && npm install --workspace=frontend && npm install --workspace=backend"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "keywords": [
+    "react",
+    "express",
+    "gemini",
+    "ai"
+  ],
+  "author": "Desenvolvedor",
+  "license": "MIT"
+}
