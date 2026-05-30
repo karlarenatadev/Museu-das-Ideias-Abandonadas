@@ -20,7 +20,7 @@ dotenv.config();
 
 // Inicializa o Express
 const app = express();  
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 // Configuração de diretórios para ES modules
 const __filename = fileURLToPath(import.meta.url);
