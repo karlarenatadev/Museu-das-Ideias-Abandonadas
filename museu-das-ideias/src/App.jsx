@@ -1,58 +1,32 @@
-import React from 'react';
+import { useState } from 'react';
+import Sidebar from './components/Sidebar';
 import IdeaForm from './components/IdeaForm';
+import MuseumModal from './components/MuseumModal';
+import { MODAL_CONTENTS } from './components/ModalContent';
 import ApiStatus from './components/ApiStatus';
 
 export default function App() {
+  const [activeModal, setActiveModal] = useState(null);
+
+  const handleNavigate = (modalId) => {
+    if (modalId === 'analyze') {
+      setActiveModal(null); // Fecha modal e volta ao formulário
+    } else {
+      setActiveModal(modalId);
+    }
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+  };
+
   return (
     <div className="min-h-screen bg-[#0f0b18] text-[#e8e0f5] font-['DM_Sans'] flex">
       
-      {/* ─── SIDEBAR (Fixo na esquerda) ─── */}
-      <aside className="w-[220px] fixed top-0 left-0 h-screen bg-[#161020] border-r border-[rgba(180,140,255,0.15)] flex flex-col z-50">
-        <div className="p-5 border-b border-[rgba(180,140,255,0.15)] flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#7c5ce8] to-[#c4a8ff] rounded-xl flex items-center justify-center text-xl">
-            🏛️
-          </div>
-          <div className="leading-tight">
-            <strong className="block font-['Cinzel'] text-[11px] font-bold text-[#c4a8ff] tracking-widest">
-              MUSEU
-            </strong>
-            <span className="text-[9px] text-[#6a5c8a] tracking-widest uppercase">
-              DAS IDEIAS ABANDONADAS
-            </span>
-          </div>
-        </div>
-        
-        {/* Menu de Navegação */}
-        <nav className="p-5 flex-1">
-          <ul className="space-y-2 text-sm">
-            <li>
-              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[rgba(180,140,255,0.1)] text-[#c4a8ff] hover:bg-[rgba(180,140,255,0.15)] transition-colors">
-                <span>🔮</span>
-                <span>Analisar Ideia</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#a898c8] hover:bg-[rgba(180,140,255,0.05)] transition-colors">
-                <span>📚</span>
-                <span>Acervo</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#a898c8] hover:bg-[rgba(180,140,255,0.05)] transition-colors">
-                <span>ℹ️</span>
-                <span>Sobre</span>
-              </a>
-            </li>
-          </ul>
-        </nav>
+      {/* Sidebar */}
+      <Sidebar onNavigate={handleNavigate} />
 
-        {/* Status da API */}
-        <div className="p-5 border-t border-[rgba(180,140,255,0.15)]">
-          <ApiStatus />
-        </div>
-      </aside>
-
-      {/* ─── CONTEÚDO PRINCIPAL (Empurrado para a direita pela Sidebar) ─── */}
+      {/* ─── CONTEÚDO PRINCIPAL ─── */}
       <main className="ml-[220px] flex-1 min-h-screen flex flex-col">
         
         {/* TOPBAR */}
@@ -60,10 +34,6 @@ export default function App() {
           <div className="text-xs text-[#6a5c8a]">
             Museu das Ideias Abandonadas · Acervo vivo desde 2019
           </div>
-          <button className="relative text-lg text-[#a898c8] hover:text-[#c4a8ff] transition-colors">
-            🔔
-            <div className="absolute top-0 right-0 w-2 h-2 bg-[#e06060] rounded-full border border-[#161020]"></div>
-          </button>
         </header>
 
         {/* ÁREA DO HERO (Bem-vindo) */}
@@ -106,6 +76,27 @@ export default function App() {
         </footer>
 
       </main>
+
+      {/* MODAIS */}
+      {activeModal === 'about' && (
+        <MuseumModal
+          isOpen={true}
+          onClose={closeModal}
+          title={MODAL_CONTENTS.about.title}
+        >
+          {MODAL_CONTENTS.about.content}
+        </MuseumModal>
+      )}
+
+      {activeModal === 'memorial' && (
+        <MuseumModal
+          isOpen={true}
+          onClose={closeModal}
+          title={MODAL_CONTENTS.memorial.title}
+        >
+          {MODAL_CONTENTS.memorial.content}
+        </MuseumModal>
+      )}
     </div>
   );
 }
