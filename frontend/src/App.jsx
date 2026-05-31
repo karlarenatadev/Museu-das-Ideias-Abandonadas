@@ -6,8 +6,46 @@ import IdeaForm from './components/IdeaForm';
 import FormModal from './components/FormModal';
 import RipModal from './components/RipModal';
 import AuthScreen from './components/AuthScreen';
-import { subscribeToAlerts } from './services/ideaService';
+import { lightCandle, listIdeas, reviveIdea, subscribeToAlerts } from './services/ideaService';
 import { authService } from './services/authService';
+
+const LOCAL_CANDLE_COUNTS_KEY = 'museum_candle_counts';
+const LOCAL_REVIVED_STATUS_KEY = 'museum_revived_status';
+
+function readLocalJson(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    localStorage.removeItem(key);
+    return fallback;
+  }
+}
+
+function writeLocalJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getIdeaKey(idea) {
+  return idea?.id || idea?.name || idea?.nome || '';
+}
+
+function normalizeIdeaCard(idea) {
+  if (!idea) return null;
+  const year = idea.created_at ? new Date(idea.created_at).getFullYear() : new Date().getFullYear();
+
+  return {
+    ...idea,
+    id: idea.id,
+    icon: idea.icon || '🕯️',
+    name: idea.name || idea.nome,
+    dates: idea.dates || `${year} - ${year}`,
+    cause: idea.cause || idea.cause_of_death_summary || idea.motivo || '',
+    category: idea.category || idea.categoria || 'Outros',
+    status: idea.status || 'abandoned',
+    honor_count: Number(idea.honor_count || 0),
+  };
+}
 
 export default function App() {
   const [authUser, setAuthUser] = useState(() => authService.getStoredUser());
@@ -55,7 +93,9 @@ export default function App() {
   const [newsletterFeedback, setNewsletterFeedback] = useState(null);
   const [newsletterLoading, setNewsletterLoading] = useState(false);
   const [selectedCandleIdea, setSelectedCandleIdea] = useState('Loja de Velas Aromáticas');
-  const [candleCount, setCandleCount] = useState({});
+  const [candleCount, setCandleCount] = useState(() => readLocalJson(LOCAL_CANDLE_COUNTS_KEY, {}));
+  const [candleLoading, setCandleLoading] = useState(false);
+  const [reviveLoading, setReviveLoading] = useState(false);
   const [isRipModalOpen, setIsRipModalOpen] = useState(false);
   const [ripTargetIdea, setRipTargetIdea] = useState(null);
   const [museumCards, setMuseumCards] = useState([
@@ -156,6 +196,46 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!authUser) return;
+
+    let active = true;
+
+    async function loadPersistedIdeas() {
+      const response = await listIdeas({ status: 'all', limit: 100, offset: 0 });
+      if (!active || !response?.data) return;
+
+      const persistedCards = response.data.map(normalizeIdeaCard).filter(Boolean);
+      const localStatuses = readLocalJson(LOCAL_REVIVED_STATUS_KEY, {});
+
+      setMuseumCards((currentCards) => {
+        const persistedKeys = new Set(persistedCards.map(getIdeaKey));
+        const localCards = currentCards
+          .filter((card) => !persistedKeys.has(getIdeaKey(card)))
+          .map((card) => ({ ...card, status: localStatuses[getIdeaKey(card)] || card.status }));
+
+        return [...persistedCards, ...localCards];
+      });
+
+      setCandleCount((currentCounts) => {
+        const nextCounts = { ...currentCounts };
+
+        persistedCards.forEach((card) => {
+          nextCounts[getIdeaKey(card)] = Number(card.honor_count || 0);
+        });
+
+        writeLocalJson(LOCAL_CANDLE_COUNTS_KEY, nextCounts);
+        return nextCounts;
+      });
+    }
+
+    loadPersistedIdeas();
+
+    return () => {
+      active = false;
+    };
+  }, [authUser]);
+
+  useEffect(() => {
     const handleScroll = () => {
       if (highlightRankingCard && !isAutoScrollingRef.current) {
         setHighlightRankingCard(false);
@@ -207,28 +287,73 @@ export default function App() {
     setIsRipModalOpen(true);
   };
 
-  const handleRipConfirm = () => {
-    if (ripTargetIdea) {
-      setMuseumCards((prev) => prev.filter((card) => card.name !== ripTargetIdea.name));
-      setRipTargetIdea(null);
+  const handleRipConfirm = async () => {
+    if (!ripTargetIdea || reviveLoading) return;
 
-      // Se a ideia deletada era a selecionada, muda para a primeira
-      if (selectedCandleIdea === ripTargetIdea.name && museumCards.length > 1) {
-        const remainingCards = museumCards.filter((card) => card.name !== ripTargetIdea.name);
-        setSelectedCandleIdea(remainingCards[0].name);
+    const targetKey = getIdeaKey(ripTargetIdea);
+    setReviveLoading(true);
+
+    try {
+      const revivedIdea = ripTargetIdea.id
+        ? normalizeIdeaCard(await reviveIdea(ripTargetIdea.id))
+        : { ...ripTargetIdea, status: 'reviving' };
+
+      if (!ripTargetIdea.id) {
+        const localStatuses = readLocalJson(LOCAL_REVIVED_STATUS_KEY, {});
+        writeLocalJson(LOCAL_REVIVED_STATUS_KEY, {
+          ...localStatuses,
+          [targetKey]: 'reviving',
+        });
       }
+
+      setMuseumCards((prev) => prev.map((card) => (
+        getIdeaKey(card) === targetKey ? { ...card, ...revivedIdea } : card
+      )));
+    } finally {
+      setReviveLoading(false);
+      setRipTargetIdea(null);
     }
   };
 
-  const handleLightCandle = () => {
-    setCandleCount(prev => ({
-      ...prev,
-      [selectedCandleIdea]: (prev[selectedCandleIdea] || 0) + 1
-    }));
-    setIsVideoModalOpen(true);
-  };
+  const selectedIdea = museumCards.find(card => (
+    getIdeaKey(card) === selectedCandleIdea || card.name === selectedCandleIdea
+  )) || museumCards[0];
+  const selectedIdeaKey = getIdeaKey(selectedIdea);
+  const selectedCandleCount = Number(candleCount[selectedIdeaKey] || selectedIdea?.honor_count || 0);
 
-  const selectedIdea = museumCards.find(card => card.name === selectedCandleIdea) || museumCards[0];
+  const handleLightCandle = async () => {
+    if (!selectedIdea || candleLoading) return;
+
+    const selectedKey = getIdeaKey(selectedIdea);
+    setCandleLoading(true);
+
+    try {
+      if (selectedIdea.id) {
+        const updatedIdea = normalizeIdeaCard(await lightCandle(selectedIdea.id));
+        const updatedCount = Number(updatedIdea?.honor_count || 0);
+
+        setMuseumCards((prev) => prev.map((card) => (
+          getIdeaKey(card) === selectedKey ? { ...card, ...updatedIdea } : card
+        )));
+
+        setCandleCount((prev) => {
+          const next = { ...prev, [selectedKey]: updatedCount };
+          writeLocalJson(LOCAL_CANDLE_COUNTS_KEY, next);
+          return next;
+        });
+      } else {
+        setCandleCount((prev) => {
+          const next = { ...prev, [selectedKey]: Number(prev[selectedKey] || 0) + 1 };
+          writeLocalJson(LOCAL_CANDLE_COUNTS_KEY, next);
+          return next;
+        });
+      }
+
+      setIsVideoModalOpen(true);
+    } finally {
+      setCandleLoading(false);
+    }
+  };
 
   const handleNotificationClick = () => {
     footerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -255,6 +380,28 @@ export default function App() {
     } catch (error) {
       console.error('Nao foi possivel compartilhar o memorial:', error);
     }
+  };
+
+  const handleIdeaAdded = (idea) => {
+    const card = normalizeIdeaCard(idea);
+    if (!card) return;
+
+    const cardKey = getIdeaKey(card);
+
+    setMuseumCards((prev) => {
+      const exists = prev.some((item) => getIdeaKey(item) === cardKey);
+      return exists
+        ? prev.map((item) => (getIdeaKey(item) === cardKey ? { ...item, ...card } : item))
+        : [card, ...prev];
+    });
+
+    setCandleCount((prev) => {
+      const next = { ...prev, [cardKey]: Number(card.honor_count || 0) };
+      writeLocalJson(LOCAL_CANDLE_COUNTS_KEY, next);
+      return next;
+    });
+
+    setSelectedCandleIdea(cardKey);
   };
 
   const handleNewsletterSubscribe = async () => {
@@ -474,13 +621,17 @@ export default function App() {
                   const matchesSearch = searchQuery === '' || card.name.toLowerCase().includes(searchQuery.toLowerCase());
                   return matchesCategory && matchesSearch;
                 })
-                .map((card) => (
-                <div className="idea-card" key={card.name} style={{ position: 'relative', cursor: 'pointer' }} onClick={() => { setSelectedCandleIdea(card.name); memorialSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
-                  {candleCount[card.name] > 0 && (
+                .map((card) => {
+                  const cardKey = getIdeaKey(card);
+                  const cardCandleCount = Number(candleCount[cardKey] || card.honor_count || 0);
+
+                  return (
+                <div className="idea-card" key={cardKey} style={{ position: 'relative', cursor: 'pointer' }} onClick={() => { setSelectedCandleIdea(cardKey); memorialSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
+                  {cardCandleCount > 0 && (
                     <div style={{ position: 'absolute', top: '8px', left: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 }}>
-                      {candleCount[card.name] > 1 && (
+                      {cardCandleCount > 1 && (
                         <div style={{ background: 'var(--danger)', color: '#fff', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', marginBottom: '-8px' }}>
-                          {candleCount[card.name]}
+                          {cardCandleCount}
                         </div>
                       )}
                       <div style={{ fontSize: '20px', filter: 'drop-shadow(0 0 4px rgba(255, 100, 100, 0.6))' }}>🕯️</div>
@@ -531,6 +682,7 @@ export default function App() {
                     <button
                       type="button"
                       className="idea-rip"
+                      disabled={card.status === 'reviving' || reviveLoading}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRipClick(card);
@@ -547,7 +699,8 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-              ))}
+                  );
+                })}
 
             </div>
           </div>
@@ -651,11 +804,11 @@ export default function App() {
           <div className="sec-header" ref={memorialSectionRef}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div className="sec-title">Memorial de uma ideia</div>
-              {candleCount[selectedCandleIdea] > 0 && (
+              {selectedCandleCount > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(224, 96, 96, 0.2)', padding: '6px 12px', borderRadius: '20px' }}>
                   <div style={{ fontSize: '16px' }}>🕯️</div>
-                  {candleCount[selectedCandleIdea] > 1 && (
-                    <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--danger)' }}>{candleCount[selectedCandleIdea]}</div>
+                  {selectedCandleCount > 1 && (
+                    <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--danger)' }}>{selectedCandleCount}</div>
                   )}
                 </div>
               )}
@@ -664,6 +817,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => handleRipClick(selectedIdea)}
+                disabled={selectedIdea?.status === 'reviving' || reviveLoading}
                 style={{
                   background: 'linear-gradient(135deg, #ff6060, #ff4444)',
                   border: 'none',
@@ -816,12 +970,12 @@ export default function App() {
                 style={{ marginBottom: '0' }}
               >
                 {museumCards.map((card) => (
-                  <option key={card.name} value={card.name}>
+                  <option key={getIdeaKey(card)} value={getIdeaKey(card)}>
                     {card.icon} {card.name}
                   </option>
                 ))}
               </select>
-              <button className="btn-primary" type="button" style={{ width: '100%', fontSize: '12px', padding: '8px 14px' }} onClick={handleLightCandle}>Acender velinha</button>
+              <button className="btn-primary" type="button" style={{ width: '100%', fontSize: '12px', padding: '8px 14px' }} onClick={handleLightCandle} disabled={candleLoading}>Acender velinha</button>
             </div>
           </section>
 
@@ -900,7 +1054,7 @@ export default function App() {
       )}
 
       <FormModal isOpen={isFormModalOpen} onClose={closeModal}>
-        <IdeaForm />
+        <IdeaForm onIdeaAdded={handleIdeaAdded} />
       </FormModal>
 
       {isVideoModalOpen && (

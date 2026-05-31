@@ -82,6 +82,26 @@ export async function reviveIdea(ideaId) {
   }
 }
 
+export async function lightCandle(ideaId) {
+  try {
+    const response = await fetch(API_ENDPOINTS.ideaCandle(ideaId), {
+      method: 'POST',
+      headers: authService.getAuthHeaders(),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.success === false) {
+      throw new Error(data.error || 'Nao foi possivel acender a vela');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Erro ao acender vela:', error);
+    handleNetworkError(error);
+  }
+}
+
 export async function markIdeaDeadAgain(ideaId, reason = '') {
   try {
     const response = await fetch(API_ENDPOINTS.ideaDieAgain(ideaId), {
