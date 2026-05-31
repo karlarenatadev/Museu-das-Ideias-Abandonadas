@@ -1112,7 +1112,7 @@ export default function App() {
                 autoPlay
                 style={{ borderRadius: 'var(--radius-sm)' }}
               >
-                <source src="/src/images/Firefly A memorial candle slowly burning in a luxury dark museum. The golden flame flickers naturall.mp4" type="video/mp4" />
+                <source src="/src/images/memorial-candle.mp4" type="video/mp4" />
                 Seu navegador não suporta vídeo.
               </video>
             </div>
