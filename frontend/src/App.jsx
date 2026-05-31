@@ -11,6 +11,7 @@ import { authService } from './services/authService';
 
 export default function App() {
   const [authUser, setAuthUser] = useState(() => authService.getStoredUser());
+  const [, setAuthSession] = useState(null);
   const [authMode, setAuthMode] = useState('login');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -92,6 +93,7 @@ export default function App() {
   const rankingCardRef = useRef(null);
   const achievementSectionRef = useRef(null);
   const timelineSectionRef = useRef(null);
+  const footerRef = useRef(null);
   const isAutoScrollingRef = useRef(false);
 
   const filters = ['Todas', 'Empreendedorismo', 'Estudos', 'Fitness', 'Hobbies', 'Criativas', 'Organização', 'Outros'];
@@ -99,27 +101,57 @@ export default function App() {
   const survivalPct = survivalPcts[selectedMood] ?? 13;
 
   useEffect(() => {
-    let active = true;
+    let mounted = true;
+
+    function getStoredUserWithoutSupabaseSession() {
+      const storedUser = authService.getStoredUser();
+
+      if (storedUser?.provider === 'google') {
+        authService.clearLocalSession();
+        return null;
+      }
+
+      return storedUser;
+    }
+
+    function applySession(session) {
+      const syncedUser = authService.persistSupabaseSession(session);
+      if (!mounted) return;
+
+      setAuthSession(session);
+      setAuthUser(syncedUser || getStoredUserWithoutSupabaseSession());
+      setAuthLoading(false);
+    }
 
     async function syncAuth() {
-      const syncedUser = await authService.syncSupabaseSession();
-      if (!active) return;
+      const { session, user, error } = await authService.syncSupabaseSession();
+      if (!mounted) return;
 
-      if (syncedUser) {
-        setAuthUser(syncedUser);
+      if (error) {
+        setAuthSession(null);
+        setAuthUser(null);
+        setAuthLoading(false);
         return;
       }
 
-      const storedUser = authService.getStoredUser();
-      if (storedUser) {
-        setAuthUser(storedUser);
-      }
+      setAuthSession(session);
+      setAuthUser(user || getStoredUserWithoutSupabaseSession());
+      setAuthLoading(false);
     }
 
     syncAuth();
 
+    const subscription = authService.onSupabaseAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' && authService.getStoredUser()?.provider === 'google') {
+        authService.clearLocalSession();
+      }
+
+      applySession(session);
+    });
+
     return () => {
-      active = false;
+      mounted = false;
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -197,6 +229,33 @@ export default function App() {
   };
 
   const selectedIdea = museumCards.find(card => card.name === selectedCandleIdea) || museumCards[0];
+
+  const handleNotificationClick = () => {
+    footerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleShareMemorial = async () => {
+    if (!selectedIdea) return;
+
+    const shareData = {
+      title: `Memorial de ${selectedIdea.name}`,
+      text: `${selectedIdea.name} (${selectedIdea.dates}) - Causa da morte: ${selectedIdea.cause}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+      }
+    } catch (error) {
+      console.error('Nao foi possivel compartilhar o memorial:', error);
+    }
+  };
 
   const handleNewsletterSubscribe = async () => {
     const email = newsletterEmail.trim();
@@ -345,7 +404,7 @@ export default function App() {
             Museu das Ideias Abandonadas · Acervo vivo desde 2019
           </div>
           <div className="topbar-right">
-            <button className="notif-btn" type="button" aria-label="Notificações">
+            <button className="notif-btn" type="button" aria-label="Notificações" onClick={handleNotificationClick}>
               🔔
               <div className="notif-dot"></div>
             </button>
@@ -364,8 +423,8 @@ export default function App() {
               Preservamos sonhos interrompidos, planos mirabolantes e projetos que não viraram realidade.
             </p>
             <div className="hero-btns">
-              <button className="btn-primary" type="button">Entrar no Museu ✦</button>
-              <button className="btn-outline" type="button">🎫 Fazer visita guiada</button>
+              <button className="btn-primary" type="button" onClick={() => handleNavigate('museu')}>Entrar no Museu ✦</button>
+              <button className="btn-outline" type="button" onClick={() => handleNavigate('sobre')}>🎫 Fazer visita guiada</button>
             </div>
             <div className="hero-stats">
               <div><div className="hero-stat-label">Ideias enterradas</div><div className="hero-stat-val">12.842</div></div>
@@ -745,7 +804,7 @@ export default function App() {
 
         </div>
 
-        <div className="footer-row">
+        <div className="footer-row" ref={footerRef}>
           <section className="footer-widget">
             <div className="footer-title">🕯️ Homenagear uma ideia</div>
             <div className="footer-sub">Preste sua homenagem a este projeto que partiu cedo demais.</div>
@@ -769,7 +828,7 @@ export default function App() {
           <section className="footer-widget">
             <div className="footer-title">📱 Compartilhar memorial</div>
             <div className="footer-sub">Mostre para o mundo o seu potencial desperdiçado.</div>
-            <button className="btn-primary" type="button" style={{ fontSize: '12px' }}>📩 Gerar card para compartilhar</button>
+            <button className="btn-primary" type="button" style={{ fontSize: '12px' }} onClick={handleShareMemorial}>📩 Gerar card para compartilhar</button>
           </section>
 
           <section className="footer-widget">

@@ -21,6 +21,15 @@ function createNullClient() {
       async getSession() {
         return { data: { session: null }, error: null };
       },
+      onAuthStateChange() {
+        return {
+          data: {
+            subscription: {
+              unsubscribe() {},
+            },
+          },
+        };
+      },
       async signOut() {
         return { error: null };
       },
@@ -29,7 +38,13 @@ function createNullClient() {
 }
 
 const supabaseClient = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
   : createNullClient();
 
 if (!supabaseUrl || !supabaseAnonKey) {

@@ -116,10 +116,16 @@ export const authService = {
 
     if (error) {
       console.error('[Supabase] Erro ao sincronizar sessao:', error.message);
-      return null;
+      return { session: null, user: null, error };
     }
 
-    const session = data?.session;
+    const session = data?.session ?? null;
+    const user = this.persistSupabaseSession(session);
+
+    return { session, user, error: null };
+  },
+
+  persistSupabaseSession(session) {
     if (!session?.access_token) {
       return null;
     }
@@ -135,6 +141,14 @@ export const authService = {
     return user;
   },
 
+  onSupabaseAuthStateChange(callback) {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      callback(event, session);
+    });
+
+    return data?.subscription || { unsubscribe() {} };
+  },
+
   setToken(token) {
     localStorage.setItem(TOKEN_KEY, token);
   },
@@ -143,9 +157,13 @@ export const authService = {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
 
-  clearToken() {
+  clearLocalSession() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+  },
+
+  clearToken() {
+    this.clearLocalSession();
 
     if (supabase?.auth?.signOut) {
       supabase.auth.signOut().catch((error) => {
