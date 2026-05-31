@@ -58,20 +58,20 @@ export default function AuthScreen({
           </button>
         </div>
 
-        <form className="auth-form" onSubmit={onSubmit} noValidate>
-          {isSignup ? (
+        <form className="auth-form" onSubmit={onSubmit}>
+          {isSignup && (
             <label>
               <span>Nome da credencial</span>
               <input
                 type="text"
                 value={authName}
                 onChange={(event) => setAuthName(event.target.value)}
-                placeholder="Curador anonimo"
+                placeholder="Curador anônimo"
                 autoComplete="name"
                 disabled={authLoading}
               />
             </label>
-          ) : null}
+          )}
 
           <label>
             <span>E-mail da credencial</span>
@@ -100,23 +100,23 @@ export default function AuthScreen({
             />
           </label>
 
-          {authError ? (
+          {authError && (
             <div className="auth-error" role="alert">
               {authError}
             </div>
-          ) : null}
+          )}
 
           <button className="auth-submit" type="submit" disabled={authLoading}>
             {authLoading
               ? 'Consultando os arquivos esquecidos...'
               : isSignup
-                ? 'Criar credencial'
-                : 'Entrar'}
+                ? 'Registrar credencial'
+                : 'Abrir os portões'}
           </button>
         </form>
 
         <div className="auth-divider" aria-hidden="true">
-          <span>ou atravesse os portoes com</span>
+          <span>ou atravesse os portões com</span>
         </div>
 
         <button
@@ -136,8 +136,8 @@ export default function AuthScreen({
           disabled={authLoading}
         >
           {isSignup
-            ? 'Ja possui credencial? Volte ao acervo.'
-            : 'Ainda nao possui credencial? Registre-se no museu.'}
+            ? 'Já possui credencial? Volte ao acervo.'
+            : 'Ainda não possui credencial? Registre-se no museu.'}
         </button>
       </section>
     </main>

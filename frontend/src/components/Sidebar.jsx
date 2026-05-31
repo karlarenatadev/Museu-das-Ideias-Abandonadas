@@ -17,7 +17,6 @@ export default function Sidebar({ onNavigate }) {
     { id: 'ranking', icon: '🏅', label: 'Ranking do Caos' },
     { id: 'conquistas', icon: '🎖️', label: 'Conquistas' },
     { id: 'timeline', icon: '⌛', label: 'Linha do Tempo', section: 'Explorar' },
-    { id: 'comunidade', icon: '👥', label: 'Comunidade' },
     { id: 'sobre', icon: 'ℹ️', label: 'Sobre o Museu' }
   ];
 

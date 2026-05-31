@@ -1,21 +1,31 @@
 import { useEffect, useState } from 'react';
 import './RipModal.css';
+import { playRandomAudio } from '../services/audioRandomizer';
 
 export default function RipModal({ isOpen, onClose, idea, onConfirm }) {
   const [showSparkles, setShowSparkles] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(5);
 
   useEffect(() => {
     if (showSparkles) {
-      const timer = setTimeout(() => {
-        setShowSparkles(false);
-        setShowCertificate(true);
-      }, 5000);
-      return () => clearTimeout(timer);
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setShowSparkles(false);
+            setShowCertificate(true);
+            return 5;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
     }
   }, [showSparkles]);
 
   const handleConfirm = () => {
+    playRandomAudio('RIP');
     setShowSparkles(true);
   };
 

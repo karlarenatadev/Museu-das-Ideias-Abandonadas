@@ -187,6 +187,9 @@
         );
         padding: 40px 40px 32px;
         border-bottom: 1px solid var(--border);
+        min-height: 500px;
+        display: flex;
+        align-items: center;
       }
       .hero::before {
         content: "";
@@ -318,17 +321,12 @@
 
       .hero-statue {
         position: absolute;
-        right: 40px;
-        top: 0;
-        bottom: 0;
-        width: 400px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0.22;
-        font-size: 220px;
+        left: 75%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        height: 100%;
+        width: auto;
         pointer-events: none;
-        filter: sepia(1) hue-rotate(220deg);
       }
 
       /* ÔöÇÔöÇÔöÇ CONTENT GRID ÔöÇÔöÇÔöÇ */
