@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
+import MuseumAtmosphere from './MuseumAtmosphere';
+import { playMuseumCue } from '../services/museumAudio';
 
 export default function FormModal({ isOpen, onClose, children }) {
   useEffect(() => {
     if (!isOpen) return undefined;
+    playMuseumCue('modal');
 
     const handleEscape = (event) => {
       if (event.key === 'Escape') {
@@ -23,7 +26,9 @@ export default function FormModal({ isOpen, onClose, children }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/55 backdrop-blur-sm" onClick={onClose} />
+      <div className="museum-modal-backdrop fixed inset-0 z-40 bg-black/55 backdrop-blur-sm" onClick={onClose}>
+        <MuseumAtmosphere variant="modal" />
+      </div>
 
       <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto px-4 py-6 sm:px-8 sm:py-10">
         <div className="relative w-full max-w-4xl">
@@ -36,7 +41,7 @@ export default function FormModal({ isOpen, onClose, children }) {
             ✕
           </button>
 
-          <div className="rounded-2xl border border-[rgba(180,140,255,0.18)] bg-[rgba(15,11,24,0.45)] p-4 sm:p-6">
+          <div className="museum-stone-panel rounded-2xl border border-[rgba(180,140,255,0.18)] bg-[rgba(15,11,24,0.45)] p-4 sm:p-6">
             {children}
           </div>
         </div>

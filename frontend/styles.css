@@ -31,6 +31,9 @@
         font-family: "DM Sans", sans-serif;
         min-height: 100vh;
         display: flex;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
       /* Scrollbar */
       ::-webkit-scrollbar {
@@ -224,7 +227,7 @@
       }
       .hero h1 {
         font-family: "Cinzel", serif;
-        font-size: clamp(28px, 4vw, 42px);
+        font-size: clamp(20px, 6vw, 42px);
         font-weight: 700;
         line-height: 1.15;
         color: #fff;
@@ -232,7 +235,7 @@
       }
       .hero p {
         color: var(--text2);
-        font-size: 14px;
+        font-size: clamp(12px, 2.5vw, 14px);
         line-height: 1.65;
         max-width: 400px;
         margin-bottom: 24px;
@@ -242,6 +245,17 @@
         gap: 10px;
         flex-wrap: wrap;
       }
+      button {
+        min-height: 44px;
+        cursor: pointer;
+      }
+
+      @media (max-width: 640px) {
+        button {
+          min-height: 40px;
+        }
+      }
+
       .btn-primary {
         background: var(--purple2);
         color: #fff;
@@ -307,12 +321,12 @@
         right: 40px;
         top: 0;
         bottom: 0;
-        width: 280px;
+        width: 400px;
         display: flex;
         align-items: center;
         justify-content: center;
-        opacity: 0.18;
-        font-size: 160px;
+        opacity: 0.22;
+        font-size: 220px;
         pointer-events: none;
         filter: sepia(1) hue-rotate(220deg);
       }
@@ -341,11 +355,11 @@
       }
       .sec-title {
         font-family: "Cinzel", serif;
-        font-size: 16px;
+        font-size: clamp(14px, 3vw, 16px);
         font-weight: 600;
       }
       .sec-sub {
-        font-size: 12px;
+        font-size: clamp(11px, 2vw, 12px);
         color: var(--text3);
         margin-top: 2px;
       }
@@ -455,13 +469,22 @@
       }
       .idea-rip {
         position: absolute;
-        top: 8px;
-        right: 8px;
-        background: rgba(0, 0, 0, 0.6);
-        border-radius: 6px;
-        padding: 3px 6px;
-        font-size: 10px;
-        color: var(--gold);
+        top: 6px;
+        right: 6px;
+        background: rgba(255, 96, 96, 0.9);
+        border: none;
+        border-radius: 4px;
+        padding: 2px 4px;
+        font-size: 8px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 5;
+      }
+      .idea-rip:hover {
+        background: rgba(255, 96, 96, 1);
+        transform: scale(1.1);
       }
       .idea-body {
         padding: 10px 12px 12px;
@@ -675,16 +698,15 @@
       /* ÔöÇÔöÇÔöÇ BOTTOM SECTIONS ÔöÇÔöÇÔöÇ */
       .bottom-grid {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 0;
-        border-top: 1px solid var(--border);
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        padding: 24px;
       }
       .bottom-sec {
         padding: 20px;
-        border-right: 1px solid var(--border);
-      }
-      .bottom-sec:last-child {
-        border-right: none;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
       }
 
       /* ÔöÇÔöÇÔöÇ MEMORIAL ÔöÇÔöÇÔöÇ */
@@ -754,7 +776,11 @@
       .memorial-cols {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        gap: 8px;
+        gap: 16px;
+      }
+      .memorial-cols > div {
+        padding: 12px;
+        background: transparent;
       }
       .mem-col-title {
         font-size: 10px;
@@ -917,6 +943,116 @@
         color: var(--text3);
       }
 
+      /* RANKINGS - enhancements */
+      @keyframes glitch {
+        0%, 90%, 100% { clip-path: none; transform: none; opacity: 1; }
+        91% { clip-path: inset(20% 0 60% 0); transform: translateX(-4px); opacity: 0.8; }
+        93% { clip-path: inset(60% 0 10% 0); transform: translateX(4px); opacity: 0.8; }
+        95% { clip-path: inset(40% 0 40% 0); transform: translateX(-2px); }
+        97% { clip-path: none; transform: none; opacity: 1; }
+      }
+
+      .rank-glitch-title {
+        position: relative;
+        animation: glitch 4s infinite;
+      }
+
+      .rank-live-badge {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(224, 96, 96, 0.15);
+        border: 1px solid rgba(224, 96, 96, 0.3);
+        border-radius: 20px;
+        padding: 2px 7px;
+        font-size: 9px;
+        font-weight: 700;
+        color: var(--danger);
+        letter-spacing: 0.5px;
+      }
+
+      .rank-live-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--danger);
+        animation: pulse 1.5s infinite;
+        flex-shrink: 0;
+      }
+
+      .rank-podium {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 8px;
+        margin: 16px 0 20px;
+        padding: 0 4px;
+      }
+
+      .rank-podium-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .rank-podium-avatar {
+        font-size: 22px;
+        margin-bottom: 2px;
+      }
+
+      .rank-podium-name {
+        font-size: 9px;
+        color: var(--text2);
+        text-align: center;
+        line-height: 1.3;
+        max-width: 70px;
+      }
+
+      .rank-podium-count {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .rank-podium-base {
+        width: 100%;
+        height: var(--podium-height);
+        background: linear-gradient(180deg, rgba(180,140,255,0.12), rgba(180,140,255,0.04));
+        border: 1px solid var(--border);
+        border-bottom: 3px solid var(--podium-color);
+        border-radius: 6px 6px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 4px;
+      }
+
+      .rank-podium-pos {
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .rank-item-bar {
+        align-items: center;
+      }
+
+      .rank-bar {
+        height: 4px;
+        background: rgba(180, 140, 255, 0.1);
+        border-radius: 2px;
+        margin-top: 4px;
+        overflow: hidden;
+      }
+
+      .rank-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--purple2), var(--purple3));
+        border-radius: 2px;
+        transition: width 0.8s ease;
+      }
+
       /* ÔöÇÔöÇÔöÇ ACHIEVEMENTS ÔöÇÔöÇÔöÇ */
       .achievement {
         display: flex;
@@ -942,18 +1078,18 @@
       /* ÔöÇÔöÇÔöÇ FOOTER WIDGETS ÔöÇÔöÇÔöÇ */
       .footer-row {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         border-top: 1px solid var(--border);
-        gap: 0;
+        gap: 16px;
+        padding: 24px;
       }
       .footer-widget {
         padding: 20px;
-        border-right: 1px solid var(--border);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
         display: flex;
         flex-direction: column;
-      }
-      .footer-widget:last-child {
-        border-right: none;
       }
       .footer-title {
         font-size: 14px;
@@ -1097,16 +1233,598 @@
         .footer-row {
           grid-template-columns: repeat(2, 1fr);
         }
+        .hero {
+          padding: 32px 24px 24px;
+        }
+        .hero-statue {
+          width: 300px;
+          font-size: 180px;
+        }
       }
+
       @media (max-width: 900px) {
-        .sidebar {
+        :root {
+          --sidebar: 80px;
+        }
+        .logo-text {
           display: none;
         }
-        .main {
-          margin-left: 0;
+        .logo-icon {
+          font-size: 32px;
+        }
+        .nav-label {
+          display: none;
+        }
+        .nav-item span:last-child {
+          display: none;
+        }
+        .sidebar-footer {
+          display: none;
         }
         .bottom-grid {
           grid-template-columns: repeat(2, 1fr);
+        }
+        .ideas-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+        .footer-row {
+          grid-template-columns: 1fr;
+        }
+        .hero h1 {
+          font-size: 28px;
+        }
+        .hero p {
+          font-size: 13px;
+        }
+        .hero-stats {
+          gap: 16px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .hero {
+          padding: 24px 16px 20px;
+        }
+        .hero-statue {
+          width: 250px;
+          font-size: 150px;
+          right: 0;
+          opacity: 0.15;
+        }
+        .hero-inner {
+          max-width: 100%;
+        }
+        .hero-tag {
+          font-size: 10px;
+        }
+        .hero-btns {
+          gap: 8px;
+        }
+        .ideas-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+        .bottom-grid {
+          grid-template-columns: 1fr;
+        }
+        .memorial-cols {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .memorial-cols > div {
+          padding: 14px;
+          background: rgba(155, 127, 244, 0.08) !important;
+          border: 1px solid rgba(155, 127, 244, 0.2);
+          border-radius: var(--radius-sm);
+        }
+        .mem-col-title {
+          font-size: 11px;
+          margin-bottom: 8px;
+          font-weight: 600;
+        }
+        .mem-item {
+          font-size: 12px;
+          margin-bottom: 6px;
+        }
+        .search-bar {
+          margin-bottom: 12px;
+          padding: 7px 10px;
+        }
+        .search-bar input {
+          font-size: 12px;
+        }
+        .filters {
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .filter-chip {
+          font-size: 12px;
+          padding: 6px 10px;
+        }
+        .left-col {
+          padding: 20px 16px;
+        }
+        .right-col {
+          padding: 20px 16px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        :root {
+          --sidebar: 70px;
+        }
+        .logo-icon {
+          font-size: 28px;
+        }
+        .main {
+          padding: 0;
+        }
+        .header {
+          padding: 12px 12px;
+        }
+        .header-search {
+          max-width: none;
+        }
+        .header-search input {
+          font-size: 11px;
+          padding: 6px 8px;
+        }
+        .hero {
+          padding: 20px 12px 16px;
+        }
+        .hero-tag {
+          font-size: 9px;
+        }
+        .hero h1 {
+          font-size: 22px;
+          margin-bottom: 8px;
+          line-height: 1.2;
+        }
+        .hero p {
+          font-size: 11px;
+          margin-bottom: 14px;
+          line-height: 1.5;
+        }
+        .hero-btns {
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+        .btn-primary,
+        .btn-outline {
+          font-size: 11px;
+          padding: 7px 11px;
+          flex: 1;
+          min-width: 120px;
+        }
+        .hero-stats {
+          flex-direction: row;
+          gap: 12px;
+          margin-top: 14px;
+          padding-top: 10px;
+          overflow-x: auto;
+          flex-wrap: wrap;
+        }
+        .hero-stat-label {
+          font-size: 8px;
+          white-space: nowrap;
+        }
+        .hero-stat-val {
+          font-size: 16px;
+        }
+        .ideas-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+        .idea-card {
+          padding: 0;
+        }
+        .idea-thumb {
+          width: 100%;
+          aspect-ratio: 1;
+          font-size: 28px;
+        }
+        .idea-name {
+          font-size: 12px;
+          padding: 8px;
+        }
+        .idea-dates,
+        .idea-cause {
+          font-size: 10px;
+          padding: 0 8px;
+        }
+        .idea-cause {
+          padding-bottom: 8px;
+        }
+        .sec-header {
+          flex-direction: column;
+          gap: 8px;
+        }
+        .filter-chip {
+          font-size: 11px;
+          padding: 5px 9px;
+        }
+        .memorial-img {
+          width: 70px;
+          height: 70px;
+          font-size: 28px;
+        }
+        .memorial-name {
+          font-size: 14px;
+        }
+        .memorial-dates {
+          font-size: 11px;
+        }
+        .memorial-cause-label,
+        .memorial-cause-val {
+          font-size: 11px;
+        }
+        .memorial-quote {
+          font-size: 11px;
+        }
+        .memorial-cols {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .memorial-cols > div {
+          padding: 12px;
+          background: rgba(155, 127, 244, 0.08) !important;
+          border: 1px solid rgba(155, 127, 244, 0.2);
+          border-radius: var(--radius-sm);
+        }
+        .mem-col-title {
+          font-size: 11px;
+          margin-bottom: 7px;
+        }
+        .mem-item {
+          font-size: 11px;
+          margin-bottom: 5px;
+        }
+        .memorial-tabs {
+          gap: 6px;
+        }
+        .mem-tab {
+          font-size: 11px;
+          padding: 6px 10px;
+        }
+        .footer-widget {
+          padding: 12px;
+        }
+        .footer-widget > div:first-child {
+          font-size: 13px;
+        }
+        .footer-sub {
+          font-size: 11px;
+        }
+        .left-col,
+        .right-col {
+          padding: 16px 12px;
+        }
+        .search-bar {
+          padding: 6px 8px;
+          margin-bottom: 12px;
+        }
+        .search-bar input {
+          font-size: 11px;
+        }
+        .form-input,
+        .form-select,
+        .form-textarea {
+          font-size: 12px;
+          padding: 7px 10px;
+        }
+        .form-textarea {
+          height: 60px;
+        }
+        .btn-submit {
+          padding: 10px;
+          font-size: 12px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        :root {
+          --sidebar: 65px;
+        }
+        .header {
+          padding: 10px 10px;
+        }
+        .header-search input {
+          font-size: 10px;
+          padding: 5px 6px;
+        }
+        .hero {
+          padding: 16px 10px 12px;
+          margin: 0;
+        }
+        .hero-tag {
+          font-size: 8px;
+        }
+        .hero h1 {
+          font-size: 18px;
+          margin-bottom: 6px;
+        }
+        .hero p {
+          font-size: 10px;
+          max-width: 100%;
+          margin-bottom: 10px;
+          line-height: 1.4;
+        }
+        .hero-btns {
+          gap: 5px;
+        }
+        .btn-primary,
+        .btn-outline {
+          font-size: 10px;
+          padding: 6px 10px;
+          flex: 1;
+          min-width: auto;
+        }
+        .hero-statue {
+          display: none;
+        }
+        .hero-stats {
+          gap: 8px;
+          margin-top: 10px;
+          padding-top: 8px;
+        }
+        .hero-stat-label {
+          font-size: 7px;
+        }
+        .hero-stat-val {
+          font-size: 14px;
+        }
+        .memorial-cols {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+        .memorial-cols > div {
+          padding: 10px;
+          background: rgba(155, 127, 244, 0.08) !important;
+          border: 1px solid rgba(155, 127, 244, 0.2);
+          border-radius: var(--radius-sm);
+        }
+        .mem-col-title {
+          font-size: 10px;
+          margin-bottom: 6px;
+          font-weight: 600;
+        }
+        .mem-item {
+          font-size: 10px;
+          margin-bottom: 4px;
+        }
+        .memorial-img {
+          width: 60px;
+          height: 60px;
+          font-size: 24px;
+        }
+        .memorial-name {
+          font-size: 13px;
+        }
+        .form-card,
+        .prediction-card {
+          margin-bottom: 12px;
+          padding: 12px;
+        }
+        .form-title {
+          font-size: 13px;
+        }
+        .form-sub {
+          font-size: 10px;
+        }
+        .ideas-grid {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+        .idea-card {
+          padding: 0;
+        }
+        .idea-thumb {
+          width: 100%;
+          aspect-ratio: 1;
+          font-size: 24px;
+        }
+        .idea-name {
+          font-size: 12px;
+          padding: 8px;
+        }
+        .idea-dates,
+        .idea-cause {
+          font-size: 9px;
+          padding: 0 8px;
+        }
+        .idea-cause {
+          padding-bottom: 8px;
+        }
+        .filter-chip {
+          font-size: 10px;
+          padding: 4px 8px;
+          margin-bottom: 2px;
+        }
+        .search-bar {
+          padding: 5px 6px;
+          margin-bottom: 8px;
+        }
+        .search-bar input {
+          font-size: 10px;
+        }
+        .sec-title {
+          font-size: 13px;
+        }
+        .sec-sub {
+          font-size: 10px;
+        }
+        .left-col,
+        .right-col {
+          padding: 12px 10px;
+        }
+        .bottom-grid {
+          gap: 10px;
+        }
+        .bottom-sec {
+          padding: 12px;
+        }
+        .form-input,
+        .form-select,
+        .form-textarea {
+          font-size: 11px;
+          padding: 6px 8px;
+        }
+        .form-textarea {
+          height: 55px;
+        }
+        .btn-submit {
+          padding: 8px;
+          font-size: 11px;
+        }
+        .footer-widget {
+          padding: 10px;
+        }
+        .footer-input {
+          font-size: 10px;
+          padding: 5px 8px;
+        }
+      }
+
+      @media (max-width: 380px) {
+        :root {
+          --sidebar: 60px;
+        }
+        .header {
+          padding: 8px 8px;
+        }
+        .header-search input {
+          font-size: 9px;
+          padding: 4px 5px;
+        }
+        .hero {
+          padding: 12px 8px 10px;
+        }
+        .hero h1 {
+          font-size: 16px;
+          margin-bottom: 4px;
+          line-height: 1.2;
+        }
+        .hero p {
+          font-size: 9px;
+          margin-bottom: 8px;
+          line-height: 1.4;
+        }
+        .hero-tag {
+          font-size: 7px;
+        }
+        .hero-tag::before {
+          width: 12px;
+        }
+        .btn-primary,
+        .btn-outline {
+          font-size: 9px;
+          padding: 5px 8px;
+        }
+        .hero-stats {
+          gap: 6px;
+          padding-top: 6px;
+          margin-top: 6px;
+        }
+        .hero-stat-label {
+          font-size: 6px;
+          white-space: nowrap;
+        }
+        .hero-stat-val {
+          font-size: 12px;
+        }
+        .logo-icon {
+          font-size: 24px;
+        }
+        .idea-card {
+          padding: 0;
+        }
+        .idea-thumb {
+          width: 100%;
+          aspect-ratio: 1;
+          font-size: 20px;
+        }
+        .idea-name {
+          font-size: 11px;
+          padding: 6px;
+        }
+        .idea-dates {
+          font-size: 8px;
+          display: none;
+        }
+        .idea-cause {
+          font-size: 8px;
+          padding: 0 6px 6px 6px;
+        }
+        .filter-chip {
+          font-size: 9px;
+          padding: 3px 6px;
+          margin-bottom: 3px;
+        }
+        .filters {
+          gap: 3px;
+        }
+        .left-col,
+        .right-col {
+          padding: 10px 8px;
+        }
+        .sec-title {
+          font-size: 12px;
+        }
+        .sec-sub {
+          font-size: 9px;
+        }
+        .memorial-cols {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+        .memorial-cols > div {
+          padding: 10px;
+          background: rgba(155, 127, 244, 0.08) !important;
+          border: 1px solid rgba(155, 127, 244, 0.2);
+          border-radius: var(--radius-sm);
+        }
+        .mem-col-title {
+          font-size: 9px;
+          margin-bottom: 6px;
+          font-weight: 600;
+        }
+        .mem-item {
+          font-size: 9px;
+          margin-bottom: 4px;
+        }
+        .memorial-img {
+          width: 55px;
+          height: 55px;
+          font-size: 20px;
+        }
+        .memorial-name {
+          font-size: 12px;
+        }
+        .memorial-dates,
+        .memorial-cause-label,
+        .memorial-cause-val,
+        .memorial-quote {
+          font-size: 9px;
+        }
+        .form-input,
+        .form-select,
+        .form-textarea {
+          font-size: 10px;
+          padding: 5px 6px;
+        }
+        .form-textarea {
+          height: 50px;
+        }
+        .btn-submit {
+          padding: 6px;
+          font-size: 10px;
+        }
+        .bottom-sec {
+          padding: 10px;
+        }
+        .footer-widget {
+          padding: 8px;
         }
       }
 

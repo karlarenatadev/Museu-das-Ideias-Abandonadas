@@ -1,0 +1,457 @@
+/* RIP Modal Overlay */
+.rip-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(2px);
+}
+
+/* RIP Modal Content */
+.rip-modal-content {
+  background: linear-gradient(135deg, #1a1228 0%, #2d1b3d 100%);
+  border: 2px solid rgba(180, 140, 255, 0.3);
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 0 40px rgba(180, 140, 255, 0.2), 0 0 80px rgba(224, 96, 96, 0.15);
+  overflow: hidden;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.rip-modal-header {
+  padding: 24px;
+  background: linear-gradient(90deg, rgba(180, 140, 255, 0.1), rgba(224, 96, 96, 0.1));
+  border-bottom: 1px solid rgba(180, 140, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rip-icon {
+  font-size: 40px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.rip-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff6060;
+  letter-spacing: 0.5px;
+}
+
+.rip-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.rip-idea-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e8e0f5;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(180, 140, 255, 0.1);
+  border-left: 3px solid rgba(180, 140, 255, 0.5);
+  border-radius: 6px;
+}
+
+.rip-warning-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 12px;
+  background: rgba(224, 96, 96, 0.15);
+  border: 1px solid rgba(224, 96, 96, 0.3);
+  border-radius: 8px;
+}
+
+.rip-warning-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.rip-warning-text {
+  font-size: 12px;
+  color: #ffc4c4;
+  line-height: 1.4;
+}
+
+.rip-consequences {
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.consequence-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #d0c8e0;
+  transition: all 0.2s ease;
+}
+
+.consequence-item:hover {
+  background: rgba(180, 140, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.consequence-emoji {
+  font-size: 16px;
+  min-width: 20px;
+}
+
+.consequence-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.rip-moral-text {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(180, 140, 255, 0.08);
+  border-radius: 6px;
+  font-style: italic;
+  font-size: 12px;
+  color: #b5a0cc;
+  text-align: center;
+  border-left: 3px solid rgba(180, 140, 255, 0.4);
+}
+
+.rip-modal-footer {
+  padding: 16px 24px;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(180, 140, 255, 0.2);
+  display: flex;
+  gap: 12px;
+}
+
+.rip-btn-cancel,
+.rip-btn-confirm {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rip-btn-cancel {
+  background: rgba(180, 140, 255, 0.15);
+  color: #b5a0cc;
+  border: 1px solid rgba(180, 140, 255, 0.3);
+}
+
+.rip-btn-cancel:hover {
+  background: rgba(180, 140, 255, 0.25);
+  border-color: rgba(180, 140, 255, 0.5);
+}
+
+.rip-btn-confirm {
+  background: linear-gradient(135deg, #ff6060, #ff4444);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 96, 96, 0.3);
+}
+
+.rip-btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 96, 96, 0.4);
+}
+
+.rip-btn-confirm:active {
+  transform: translateY(0);
+}
+
+/* Sparkles Effect */
+.sparkles-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  overflow: hidden;
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 24px;
+  opacity: 1;
+  filter: drop-shadow(0 0 8px rgba(180, 140, 255, 0.6));
+  animation: fall 3s ease-in forwards;
+}
+
+@keyframes fall {
+  0% {
+    opacity: 1;
+    transform: translateY(-100px) scale(1);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) scale(0.3) rotateZ(360deg);
+  }
+}
+
+/* Death Certificate */
+.rip-certificate {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: zoomIn 0.6s ease-out;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.certificate-bg {
+  background: linear-gradient(135deg, #faf8f3 0%, #f0ebe0 100%);
+  padding: 40px;
+  position: relative;
+  border: 3px solid #3d3d3d;
+  border-radius: 8px;
+  margin: 12px;
+  text-align: center;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+.certificate-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.02) 2px,
+      rgba(0, 0, 0, 0.02) 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.02) 2px,
+      rgba(0, 0, 0, 0.02) 4px
+    );
+  pointer-events: none;
+  border-radius: 5px;
+}
+
+.certificate-header {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.certificate-seal {
+  font-size: 48px;
+  margin-bottom: 8px;
+  animation: rotate 4s linear infinite;
+}
+
+@keyframes rotate {
+  0%, 100% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.certificate-header h2 {
+  font-size: 28px;
+  font-weight: 900;
+  color: #3d3d3d;
+  letter-spacing: 2px;
+  font-family: 'Georgia', serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.certificate-line {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #3d3d3d, transparent);
+  margin: 16px 0;
+  position: relative;
+}
+
+.certificate-line::before {
+  content: '✦';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #3d3d3d;
+  font-size: 12px;
+  background: inherit;
+}
+
+.certificate-body {
+  position: relative;
+  margin: 24px 0;
+  text-align: center;
+}
+
+.cert-label {
+  font-size: 10px;
+  color: #666;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.cert-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #3d3d3d;
+  margin-bottom: 8px;
+  font-family: 'Georgia', serif;
+}
+
+.cert-dates {
+  font-size: 14px;
+  color: #555;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.cert-cause {
+  font-size: 13px;
+  color: #3d3d3d;
+  max-width: 400px;
+  margin: 0 auto 8px;
+  line-height: 1.5;
+}
+
+.cert-date-today {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.certificate-footer {
+  position: relative;
+  margin-top: 32px;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  padding-top: 16px;
+}
+
+.cert-final-message {
+  font-size: 12px;
+  color: #555;
+  font-style: italic;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.cert-signature {
+  font-size: 13px;
+  color: #3d3d3d;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.certificate-controls {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.btn-print,
+.btn-close-cert {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-print {
+  flex: 1;
+  background: #3d3d3d;
+  color: white;
+}
+
+.btn-print:hover {
+  background: #2a2a2a;
+  transform: translateY(-1px);
+}
+
+.btn-close-cert {
+  background: transparent;
+  color: #999;
+  padding: 8px 12px;
+}
+
+.btn-close-cert:hover {
+  color: #3d3d3d;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+  }
+
+  .rip-modal-overlay {
+    background: transparent;
+  }
+
+  .certificate-controls {
+    display: none;
+  }
+
+  .rip-certificate {
+    box-shadow: none;
+    max-width: 100%;
+  }
+}

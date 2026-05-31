@@ -1,31 +1,24 @@
-/**
- * Serviço de comunicação com a API do backend
- * Gerencia todas as requisições relacionadas a ideias abandonadas
- */
+﻿import { API_ENDPOINTS } from '../config/api';
+import { authService } from './authService';
 
-/**
- * Envia uma ideia para análise da IA
- * @param {Object} ideaData - Dados da ideia
- * @param {string} ideaData.nome - Nome da ideia
- * @param {string} ideaData.categoria - Categoria da ideia
- * @param {number} ideaData.empolgacao - Nível de empolgação (1-5)
- * @param {string} ideaData.motivo - Motivo do abandono
- * @returns {Promise<Object>} Análise da IA
- * @throws {Error} Se houver erro na requisição
- */
+function handleNetworkError(error) {
+  if (
+    error instanceof TypeError &&
+    error.message.includes('Failed to fetch')
+  ) {
+    throw new Error(
+      'Nao foi possivel conectar ao backend (http://localhost:3001). Verifique se o servidor backend esta em execucao.',
+    );
+  }
+
+  throw error;
+}
+
 export async function analyzeIdea(ideaData) {
   try {
-<<<<<<< HEAD
     const response = await fetch(API_ENDPOINTS.analyzeIdea, {
-=======
-    const endpoint = '/api/analisar-ideia';
-    
-    const response = await fetch(endpoint, {
->>>>>>> karlarenata
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: authService.getAuthHeaders(),
       body: JSON.stringify(ideaData),
     });
 
@@ -39,35 +32,107 @@ export async function analyzeIdea(ideaData) {
     return data.data;
   } catch (error) {
     console.error('❌ Erro ao analisar ideia:', error);
-    
-    // Melhora mensagem de erro para o usuário
-    if (error instanceof TypeError) {
-      throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando em http://localhost:3001');
-    }
-    
+    handleNetworkError(error);
     throw error;
   }
 }
 
-/**
- * Verifica se a API está online
- * @returns {Promise<boolean>}
- */
+export async function listIdeas({ status = 'all', limit = 100, offset = 0 } = {}) {
+  try {
+    const params = new URLSearchParams({
+      status,
+      limit: String(limit),
+      offset: String(offset),
+    });
+
+    const response = await fetch(`${API_ENDPOINTS.ideas}?${params.toString()}`, {
+      headers: authService.getAuthHeaders(),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.success === false) {
+      throw new Error(data.error || 'Nao foi possivel carregar as ideias');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Erro ao listar ideias:', error);
+    handleNetworkError(error);
+  }
+}
+
+export async function reviveIdea(ideaId) {
+  try {
+    const response = await fetch(API_ENDPOINTS.ideaRevive(ideaId), {
+      method: 'POST',
+      headers: authService.getAuthHeaders(),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.success === false) {
+      throw new Error(data.error || 'Nao foi possivel registrar a tentativa');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Erro ao ressuscitar ideia:', error);
+    handleNetworkError(error);
+  }
+}
+
+export async function markIdeaDeadAgain(ideaId, reason = '') {
+  try {
+    const response = await fetch(API_ENDPOINTS.ideaDieAgain(ideaId), {
+      method: 'POST',
+      headers: authService.getAuthHeaders(),
+      body: JSON.stringify({ reason }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.success === false) {
+      throw new Error(data.error || 'Nao foi possivel registrar a nova morte');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Erro ao registrar nova morte:', error);
+    handleNetworkError(error);
+  }
+}
+
 export async function checkApiHealth() {
   try {
-<<<<<<< HEAD
     const response = await fetch(API_ENDPOINTS.health);
-=======
-    const response = await fetch('/api/health', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
->>>>>>> karlarenata
     return response.ok;
   } catch (error) {
     console.error('❌ API offline:', error);
     return false;
+  }
+}
+
+export async function subscribeToAlerts(email) {
+  try {
+    const response = await fetch(API_ENDPOINTS.subscribeAlerts, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.success === false) {
+      throw new Error(data.error || 'Nao foi possivel assinar os alertas');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Erro ao assinar alertas:', error);
+
+    handleNetworkError(error);
   }
 }

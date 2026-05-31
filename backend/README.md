@@ -1,46 +1,94 @@
-# 🏛️ Museu das Ideias Abandonadas - Backend API
+# 🏛️ Museu das Ideias Abandonadas — Backend API
 
 Backend Node.js que serve como ponte entre o frontend React e a API do Google Gemini para análise sarcástica e poética de ideias abandonadas.
 
-## 🚀 Stack
+## Stack
 
-- Node.js + Express
-- Google Gemini AI (gemini-1.5-flash)
-- CORS + dotenv
+- **Node.js + Express** — servidor HTTP
+- **Google Gemini 2.0 Flash** — análise das ideias
+- **Helmet** — headers de segurança HTTP
+- **express-rate-limit** — proteção contra abuso de API
+- **Pino** — logging estruturado (JSON em produção, pretty em dev)
+- **Nodemailer** — e-mails de confirmação de assinatura
+- **Supabase** — persistência (opcional)
 
-## 📦 Instalação e Configuração
+## Estrutura
+
+```
+backend/
+├── src/
+│   ├── config/
+│   │   ├── gemini.js        # Singleton do cliente Gemini
+│   │   ├── logger.js        # Logger pino
+│   │   └── mailer.js        # Singleton do transporter SMTP
+│   ├── middleware/
+│   │   ├── rateLimiter.js   # Rate limits por rota
+│   │   ├── requestLogger.js # Log HTTP estruturado
+│   │   └── validateIdeia.js # Validação + sanitização do body
+│   ├── routes/
+│   │   ├── health.js        # GET  /api/health
+│   │   ├── ideas.js         # POST /api/analisar-ideia
+│   │   └── alerts.js        # POST /api/assinar-alertas
+│   ├── services/
+│   │   ├── GeminiService.js # Lógica de prompt e parse da IA
+│   │   └── MailService.js   # Lógica de envio de e-mail
+│   └── server.js            # Boot: middlewares, rotas, servidor
+├── .env.example
+├── .gitignore
+└── package.json
+```
+
+## Instalação
 
 ```bash
 # 1. Instalar dependências
 npm install
 
 # 2. Configurar variáveis de ambiente
-copy .env.example .env
+cp .env.example .env
+# Edite o .env com sua chave Gemini e dados SMTP
 ```
 
-Edite o `.env` e adicione sua chave do Gemini:
-```env
-PORT=3001
-GEMINI_API_KEY=sua_chave_aqui
-```
+## Variáveis de Ambiente
 
-**Obter chave:** https://makersuite.google.com/app/apikey
+| Variável | Obrigatória | Descrição |
+|---|---|---|
+| `GEMINI_API_KEY` | ✅ | Chave da API Google Gemini |
+| `FRONTEND_URL` | ✅ | URL do frontend para CORS (ex: `http://localhost:5173`) |
+| `NODE_ENV` | recomendado | `development` ou `production` |
+| `PORT` | não | Porta do servidor (padrão: `3001`) |
+| `LOG_LEVEL` | não | Nível de log pino (padrão: `info`) |
+| `SMTP_HOST` | e-mail | Host SMTP |
+| `SMTP_PORT` | e-mail | Porta SMTP |
+| `SMTP_SECURE` | e-mail | `true` para TLS (porta 465) |
+| `SMTP_USER` | e-mail | Usuário SMTP |
+| `SMTP_PASS` | e-mail | Senha de app SMTP |
+| `MAIL_FROM` | e-mail | Remetente dos e-mails |
+| `SUPABASE_URL` | Supabase | URL do projeto |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase | Chave service role |
+
+> **Nota:** as variáveis SMTP são opcionais. Se não configuradas, o servidor sobe normalmente e apenas loga um aviso — o endpoint `/api/assinar-alertas` retornará erro 500 ao ser chamado.
+
+## Executar
 
 ```bash
-# 3. Iniciar servidor
-npm run dev    # desenvolvimento (auto-reload)
+npm run dev    # desenvolvimento com auto-reload
 npm start      # produção
 ```
 
-## 🛣️ API Endpoints
+## Endpoints
 
-### `GET /health`
-Health check do servidor.
+### `GET /api/health`
+
+Verifica se o servidor está no ar.
 
 ### `POST /api/analisar-ideia`
-Analisa uma ideia abandonada.
 
-**Request:**
+Analisa uma ideia abandonada com a Curadora do Caos.
+
+Rate limit: **5 requisições por minuto por IP**.
+
+**Body:**
 ```json
 {
   "nome": "App de delivery de sonhos",
@@ -50,7 +98,7 @@ Analisa uma ideia abandonada.
 }
 ```
 
-**Response:**
+**Resposta:**
 ```json
 {
   "success": true,
@@ -62,35 +110,24 @@ Analisa uma ideia abandonada.
 }
 ```
 
-## 🧪 Testar com cURL
+### `POST /api/assinar-alertas`
 
-```bash
-curl -X POST http://localhost:3001/api/analisar-ideia ^
-  -H "Content-Type: application/json" ^
-  -d "{\"nome\":\"Rede social para pedras\",\"categoria\":\"App\",\"empolgacao\":4,\"motivo\":\"Pedras não têm WiFi\"}"
-```
+Assina alertas e envia e-mail de confirmação.
 
-## 🔗 Integração com Frontend
-
-```javascript
-// Frontend: src/services/api.js
-const API_URL = 'http://localhost:3001';
-
-export async function analyzeIdea(ideaData) {
-  const response = await fetch(`${API_URL}/api/analisar-ideia`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(ideaData)
-  });
-  
-  const data = await response.json();
-  return data.data;
+**Body:**
+```json
+{
+  "email": "visitante@exemplo.com"
 }
 ```
 
-## 🎭 Persona da IA
+## Testar com cURL
 
-**Curadora do Caos** - Analítica, poética, sarcástica e empática.
+```bash
+curl -X POST http://localhost:3001/api/analisar-ideia \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Rede social para pedras","categoria":"App","empolgacao":4,"motivo":"Pedras não têm WiFi"}'
+```
 
 ---
 

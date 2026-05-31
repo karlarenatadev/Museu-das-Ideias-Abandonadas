@@ -10,15 +10,15 @@ export default function Sidebar({ onNavigate }) {
   const [activeLabel, setActiveLabel] = useState('Início');
 
   const menuItems = [
-    { id: 'analyze', icon: '🏛️', label: 'Início' },
-    { id: 'analyze', icon: '🔮', label: 'Dentro do Museu' },
+    { id: 'inicio', icon: '🏛️', label: 'Início' },
+    { id: 'museu', icon: '🔮', label: 'Dentro do Museu' },
     { id: 'memorial', icon: '📜', label: 'Memorial' },
-    { id: 'analyze', icon: '🗃️', label: 'Relíquias' },
-    { id: 'analyze', icon: '🏅', label: 'Ranking do Caos', badge: '5' },
-    { id: 'analyze', icon: '🎖️', label: 'Conquistas' },
-    { id: 'analyze', icon: '⌛', label: 'Linha do Tempo', section: 'Explorar' },
-    { id: 'analyze', icon: '👥', label: 'Comunidade' },
-    { id: 'about', icon: 'ℹ️', label: 'Sobre o Museu' }
+    { id: 'reliquias', icon: '🗃️', label: 'Relíquias' },
+    { id: 'ranking', icon: '🏅', label: 'Ranking do Caos' },
+    { id: 'conquistas', icon: '🎖️', label: 'Conquistas' },
+    { id: 'timeline', icon: '⌛', label: 'Linha do Tempo', section: 'Explorar' },
+    { id: 'comunidade', icon: '👥', label: 'Comunidade' },
+    { id: 'sobre', icon: 'ℹ️', label: 'Sobre o Museu' }
   ];
 
   return (

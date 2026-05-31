@@ -4,6 +4,8 @@
  */
 
 import { useEffect } from 'react';
+import MuseumAtmosphere from './MuseumAtmosphere';
+import { playMuseumCue } from '../services/museumAudio';
 
 export default function MuseumModal({
   isOpen,
@@ -21,6 +23,7 @@ export default function MuseumModal({
     };
 
     if (isOpen) {
+      playMuseumCue('modal');
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
     }
@@ -37,9 +40,11 @@ export default function MuseumModal({
     <>
       {/* Backdrop com blur */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 animate-fadeIn"
+        className="museum-modal-backdrop fixed inset-0 bg-black/50 backdrop-blur-sm z-40 animate-fadeIn"
         onClick={onClose}
-      />
+      >
+        <MuseumAtmosphere variant="modal" />
+      </div>
 
       {/* Modal - Quadro do Louvre */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4 animate-fadeIn">
@@ -49,7 +54,7 @@ export default function MuseumModal({
             {/* Borda interna (dourada envelhecida) */}
             <div className="bg-gradient-to-br from-[#e8b86d]/20 to-[#c4a8ff]/10 p-1 rounded-md">
               {/* Conteúdo interno */}
-              <div className="bg-[#0f0b18] rounded-sm p-8 border border-[rgba(232,184,109,0.15)]">
+              <div className="museum-stone-panel bg-[#0f0b18] rounded-sm p-8 border border-[rgba(232,184,109,0.15)]">
                 
                 {/* Header do Modal */}
                 <div className="mb-6 pb-6 border-b border-[rgba(180,140,255,0.15)]">

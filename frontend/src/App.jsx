@@ -1,39 +1,168 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import MuseumModal from './components/MuseumModal';
 import { MODAL_CONTENTS } from './components/ModalContent';
 import IdeaForm from './components/IdeaForm';
 import FormModal from './components/FormModal';
+import RipModal from './components/RipModal';
+import AuthScreen from './components/AuthScreen';
+import { subscribeToAlerts } from './services/ideaService';
+import { authService } from './services/authService';
 
 export default function App() {
+  const [authUser, setAuthUser] = useState(() => authService.getStoredUser());
+  const [authMode, setAuthMode] = useState('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState(null);
+
   const [activeModal, setActiveModal] = useState(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState('Todas');
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeMemTab, setActiveMemTab] = useState('Sobre');
   const [activeRankTab, setActiveRankTab] = useState('Geral');
-  const [selectedMood, setSelectedMood] = useState(4);
-  const [abandonReason, setAbandonReason] = useState('');
+  const [highlightRankingCard, setHighlightRankingCard] = useState(false);
+  const rankData = {
+    'Geral': [
+      { pos: 1, avatar: '👑', name: 'Rainha dos Começos', count: 142 },
+      { pos: 2, avatar: '🐐', name: 'Mestre da Procrastinação', count: 97 },
+      { pos: 3, avatar: '⚡', name: 'Deus do Potencial', count: 73 },
+      { pos: 4, avatar: '🔮', name: 'Imperador dos "Amanhãs"', count: 65 },
+      { pos: 5, avatar: '🧩', name: 'Senhor das Abas Abertas', count: 61 },
+    ],
+    'Por categoria': [
+      { pos: 1, avatar: '💼', name: 'Empreendedorismo', count: 4821 },
+      { pos: 2, avatar: '📚', name: 'Estudos', count: 3104 },
+      { pos: 3, avatar: '💪', name: 'Fitness', count: 2877 },
+      { pos: 4, avatar: '🎨', name: 'Criativas', count: 1943 },
+      { pos: 5, avatar: '🗂️', name: 'Organização', count: 1097 },
+    ],
+    'Por causa da morte': [
+      { pos: 1, avatar: '😴', name: 'Procrastinação crônica', count: 3842 },
+      { pos: 2, avatar: '💸', name: 'Falta de dinheiro', count: 2761 },
+      { pos: 3, avatar: '😩', name: 'Burnout no dia 3', count: 2104 },
+      { pos: 4, avatar: '📱', name: 'Distração com redes sociais', count: 1983 },
+      { pos: 5, avatar: '🤷', name: 'Simplesmente desistiu', count: 1560 },
+    ],
+  };
+  const [selectedMood] = useState(4);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterFeedback, setNewsletterFeedback] = useState(null);
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [selectedCandleIdea, setSelectedCandleIdea] = useState('Loja de Velas Aromáticas');
+  const [candleCount, setCandleCount] = useState({});
+  const [isRipModalOpen, setIsRipModalOpen] = useState(false);
+  const [ripTargetIdea, setRipTargetIdea] = useState(null);
+  const [museumCards, setMuseumCards] = useState([
+    { icon: '🧪', name: 'Teste RIP Modal', dates: '2026 – 2026', cause: 'Clique no botão RIP para testar a funcionalidade', category: 'Outros' },
+    { icon: '📱', name: 'App de Delivery Gourmet', dates: '2025 – 2025', cause: 'Problema com a integração de pagamento', category: 'Empreendedorismo' },
+    { icon: '🎮', name: 'Jogo Indie 2D', dates: '2024 – 2025', cause: 'Sem tempo para terminá-lo', category: 'Criativas' },
+    { icon: '💻', name: 'Plataforma SaaS B2B', dates: '2023 – 2024', cause: 'Competência aumentou demais', category: 'Empreendedorismo' },
+    { icon: '🌿', name: 'Eco-Startup Sustentável', dates: '2025 – 2025', cause: 'Custos de produção inviáveis', category: 'Empreendedorismo' },
+    { icon: '🎓', name: 'Curso Online Premium', dates: '2023 – 2024', cause: 'Gravação de vídeo muito cansativa', category: 'Estudos' },
+    { icon: '🏠', name: 'Marketplace Imobiliário', dates: '2024 – 2025', cause: 'Burocracia imobiliária complexa', category: 'Empreendedorismo' },
+    { icon: '🍕', name: 'Franquia de Pizza Artesanal', dates: '2023 – 2024', cause: 'Aluguel do ponto muito caro', category: 'Empreendedorismo' },
+    { icon: '✈️', name: 'Agência de Viagens Alternativa', dates: '2025 – 2025', cause: 'Pandemia voltou do nada', category: 'Empreendedorismo' },
+    { icon: '💄', name: 'Loja de Cosméticos Veganos', dates: '2024 – 2024', cause: 'Concorrência muito forte', category: 'Empreendedorismo' },
+    { icon: '📚', name: 'Plataforma de E-books', dates: '2023 – 2024', cause: 'Pirataria é um problema', category: 'Empreendedorismo' },
+    { icon: '🕯️', name: 'Loja de Velas Aromáticas', dates: '2022 – 2022', cause: 'Pesquisa excessiva no Pinterest', category: 'Hobbies' },
+    { icon: '🎬', name: 'Canal de Produtividade', dates: '2023 – 2023', cause: 'Editou o primeiro vídeo e desistiu', category: 'Hobbies' },
+    { icon: '🇩🇪', name: 'Curso de Alemão B1', dates: '2021 – 2021', cause: 'Duolingo burnout', category: 'Estudos' },
+    { icon: '💪', name: 'Projeto Fitness', dates: '2022 – 2023', cause: 'Encontrou pão de alho', category: 'Fitness' },
+    { icon: '🎙️', name: 'Podcast sobre Mindset', dates: '2023 – 2023', cause: 'Ninguém ouviu o episódio 1', category: 'Hobbies' },
+    { icon: '🎨', name: 'Aprender Aquarela', dates: '2022 – 2022', cause: 'Fase existencial', category: 'Criativas' },
+    { icon: '🦄', name: 'Startup Inovadora', dates: '2024 – 2024', cause: 'Pitch pro espelho', category: 'Empreendedorismo' },
+    { icon: '🐕', name: 'App de Encontros para Cachorros', dates: '2023 – 2023', cause: 'Seu cachorro recusava matches', category: 'Empreendedorismo' },
+    { icon: '🥗', name: 'Livro de Receitas Veganas', dates: '2022 – 2023', cause: 'Descobriu que alface é chato', category: 'Criativas' },
+    { icon: '🚁', name: 'Curso de Fotografia com Drones', dates: '2024 – 2024', cause: 'Drone caiu na primeira aula', category: 'Estudos' },
+    { icon: '☕', name: 'Blog de Reviews de Cafeterias', dates: '2023 – 2023', cause: 'Ficou muito obeso para sair de casa', category: 'Hobbies' },
+    { icon: '📋', name: 'App de Gestão de Rotina', dates: '2023 – 2024', cause: 'Muito ocupado planejando pra executar', category: 'Organização' },
+    { icon: '🧘', name: 'Desafio de 100 Dias de Meditação', dates: '2024 – 2024', cause: 'Dormiu no dia 5', category: 'Fitness' }
+  ]);
 
-  const museumCards = [
-    { icon: '🕯️', name: 'Loja de Velas Aromáticas', dates: '2022 – 2022', cause: 'Pesquisa excessiva no Pinterest' },
-    { icon: '🎬', name: 'Canal de Produtividade', dates: '2023 – 2023', cause: 'Editou o primeiro vídeo e desistiu' },
-    { icon: '🇩🇪', name: 'Curso de Alemão B1', dates: '2021 – 2021', cause: 'Duolingo burnout' },
-    { icon: '💪', name: 'Projeto Fitness', dates: '2022 – 2023', cause: 'Encontrou pão de alho' },
-    { icon: '🎙️', name: 'Podcast sobre Mindset', dates: '2023 – 2023', cause: 'Ninguém ouviu o episódio 1' },
-    { icon: '🎨', name: 'Aprender Aquarela', dates: '2022 – 2022', cause: 'Fase existencial' },
-    { icon: '🦄', name: 'Startup Inovadora', dates: '2024 – 2024', cause: 'Pitch pro espelho' }
-  ];
+  const mainRef = useRef(null);
+  const museumSectionRef = useRef(null);
+  const memorialSectionRef = useRef(null);
+  const reliquiarySectionRef = useRef(null);
+  const rankingSectionRef = useRef(null);
+  const rankingCardRef = useRef(null);
+  const achievementSectionRef = useRef(null);
+  const timelineSectionRef = useRef(null);
+  const isAutoScrollingRef = useRef(false);
 
   const filters = ['Todas', 'Empreendedorismo', 'Estudos', 'Fitness', 'Hobbies', 'Criativas', 'Organização', 'Outros'];
   const survivalPcts = [7, 13, 19, 31, 48];
   const survivalPct = survivalPcts[selectedMood] ?? 13;
 
-  const handleNavigate = (modalId) => {
-    if (modalId === 'analyze') {
-      setActiveModal(null); // Fecha modal e volta ao formulário
-    } else {
-      setActiveModal(modalId);
+  useEffect(() => {
+    let active = true;
+
+    async function syncAuth() {
+      const syncedUser = await authService.syncSupabaseSession();
+      if (!active) return;
+
+      if (syncedUser) {
+        setAuthUser(syncedUser);
+        return;
+      }
+
+      const storedUser = authService.getStoredUser();
+      if (storedUser) {
+        setAuthUser(storedUser);
+      }
     }
+
+    syncAuth();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (highlightRankingCard && !isAutoScrollingRef.current) {
+        setHighlightRankingCard(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [highlightRankingCard]);
+
+  const handleNavigate = (section) => {
+    setActiveModal(null);
+
+    const scrollToElement = (ref, center = false) => {
+      if (ref?.current) {
+        ref.current.scrollIntoView({ behavior: 'smooth', block: center ? 'center' : 'start' });
+      }
+    };
+
+    const sectionMap = {
+      'inicio': () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+      'museu': () => scrollToElement(museumSectionRef),
+      'memorial': () => setActiveModal('memorial'),
+      'reliquias': () => { setActiveMemTab('Relíquias'); scrollToElement(reliquiarySectionRef); },
+      'ranking': () => {
+        setHighlightRankingCard(true);
+        isAutoScrollingRef.current = true;
+        scrollToElement(rankingCardRef, true);
+        setTimeout(() => {
+          isAutoScrollingRef.current = false;
+        }, 800);
+      },
+      'conquistas': () => { setActiveMemTab('Conquistas'); scrollToElement(achievementSectionRef); },
+      'timeline': () => { setActiveMemTab('Linha do Tempo'); scrollToElement(timelineSectionRef); },
+      'comunidade': () => scrollToElement(museumSectionRef),
+      'sobre': () => setActiveModal('about')
+    };
+
+    sectionMap[section]?.();
   };
 
   const closeModal = () => {
@@ -41,11 +170,176 @@ export default function App() {
     setIsFormModalOpen(false);
   };
 
+  const handleRipClick = (idea) => {
+    setRipTargetIdea(idea);
+    setIsRipModalOpen(true);
+  };
+
+  const handleRipConfirm = () => {
+    if (ripTargetIdea) {
+      setMuseumCards((prev) => prev.filter((card) => card.name !== ripTargetIdea.name));
+      setRipTargetIdea(null);
+
+      // Se a ideia deletada era a selecionada, muda para a primeira
+      if (selectedCandleIdea === ripTargetIdea.name && museumCards.length > 1) {
+        const remainingCards = museumCards.filter((card) => card.name !== ripTargetIdea.name);
+        setSelectedCandleIdea(remainingCards[0].name);
+      }
+    }
+  };
+
+  const handleLightCandle = () => {
+    setCandleCount(prev => ({
+      ...prev,
+      [selectedCandleIdea]: (prev[selectedCandleIdea] || 0) + 1
+    }));
+    setIsVideoModalOpen(true);
+  };
+
+  const selectedIdea = museumCards.find(card => card.name === selectedCandleIdea) || museumCards[0];
+
+  const handleNewsletterSubscribe = async () => {
+    const email = newsletterEmail.trim();
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!email || !isValidEmail) {
+      setNewsletterFeedback({
+        type: 'error',
+        message: 'Digite um e-mail válido para assinar os alertas.'
+      });
+      return;
+    }
+
+    try {
+      setNewsletterLoading(true);
+      setNewsletterFeedback(null);
+      await subscribeToAlerts(email);
+      setNewsletterFeedback({
+        type: 'success',
+        message: 'E-mail de confirmacao enviado. Verifique sua caixa de entrada.'
+      });
+      setNewsletterEmail('');
+    } catch (error) {
+      setNewsletterFeedback({
+        type: 'error',
+        message: error.message || 'Nao foi possivel enviar o e-mail de confirmacao.'
+      });
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
+
+  const validateAuthFields = () => {
+    const email = authEmail.trim();
+
+    if (!email) {
+      return 'Informe seu e-mail para entrar no museu.';
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return 'Informe um e-mail valido.';
+    }
+
+    if (!authPassword) {
+      return 'Informe sua senha.';
+    }
+
+    if (authPassword.length < 6) {
+      return 'A senha precisa ter pelo menos 6 caracteres.';
+    }
+
+    return null;
+  };
+
+  const handleAuthSubmit = async (event) => {
+    event.preventDefault();
+
+    const validationError = validateAuthFields();
+    if (validationError) {
+      setAuthError(validationError);
+      return;
+    }
+
+    setAuthLoading(true);
+    setAuthError(null);
+
+    try {
+      const credentials = {
+        email: authEmail.trim(),
+        password: authPassword,
+        name: authName.trim(),
+      };
+
+      const session = authMode === 'signup'
+        ? await authService.signupWithPassword(credentials)
+        : await authService.loginWithPassword(credentials);
+
+      if (session?.needsEmailConfirmation) {
+        setAuthError('Credencial criada. Verifique seu e-mail para confirmar o acesso antes de entrar.');
+        return;
+      }
+
+      const user = session?.user || authService.getStoredUser();
+      if (user) {
+        setAuthUser(user);
+        return;
+      }
+
+      throw new Error('Nao foi possivel iniciar sua sessao. Tente novamente.');
+    } catch (error) {
+      setAuthError(error.message || 'Nao foi possivel entrar com e-mail e senha.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setAuthLoading(true);
+    setAuthError(null);
+
+    try {
+      await authService.loginWithGoogle();
+    } catch (error) {
+      setAuthError(error.message || 'Nao foi possivel iniciar o login com Google.');
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    setAuthUser(null);
+    setAuthEmail('');
+    setAuthPassword('');
+    setAuthName('');
+    setAuthMode('login');
+    setAuthLoading(false);
+    setAuthError(null);
+  };
+
+  if (!authUser) {
+    return (
+      <AuthScreen
+        authMode={authMode}
+        setAuthMode={setAuthMode}
+        authEmail={authEmail}
+        setAuthEmail={setAuthEmail}
+        authPassword={authPassword}
+        setAuthPassword={setAuthPassword}
+        authName={authName}
+        setAuthName={setAuthName}
+        authLoading={authLoading}
+        authError={authError}
+        onSubmit={handleAuthSubmit}
+        onGoogleLogin={handleGoogleLogin}
+      />
+    );
+  }
+
   return (
     <div>
       <Sidebar onNavigate={handleNavigate} />
 
-      <main className="main">
+      <main className="main" ref={mainRef}>
         <header className="topbar">
           <div className="topbar-left">
             Museu das Ideias Abandonadas · Acervo vivo desde 2019
@@ -54,6 +348,9 @@ export default function App() {
             <button className="notif-btn" type="button" aria-label="Notificações">
               🔔
               <div className="notif-dot"></div>
+            </button>
+            <button className="btn-outline" type="button" onClick={handleLogout} style={{ padding: '8px 12px' }}>
+              Sair
             </button>
           </div>
         </header>
@@ -81,7 +378,7 @@ export default function App() {
 
         <div className="content-grid">
           <div className="center-col">
-            <div className="sec-header">
+            <div className="sec-header" ref={museumSectionRef}>
               <div>
                 <div className="sec-title">Dentro do museu</div>
                 <div className="sec-sub">Explore as alas do nosso acervo de sonhos não realizados.</div>
@@ -90,7 +387,12 @@ export default function App() {
 
             <div className="search-bar">
               <span className="search-icon">🔍</span>
-              <input type="text" placeholder="Buscar uma ideia..." />
+              <input
+                type="text"
+                placeholder="Buscar uma ideia..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
 
             <div className="filters">
@@ -107,29 +409,76 @@ export default function App() {
             </div>
 
             <div className="ideas-grid">
-              {museumCards.map((card) => (
-                <div className="idea-card" key={card.name}>
+              {museumCards
+                .filter(card => {
+                  const matchesCategory = activeFilter === 'Todas' || card.category === activeFilter;
+                  const matchesSearch = searchQuery === '' || card.name.toLowerCase().includes(searchQuery.toLowerCase());
+                  return matchesCategory && matchesSearch;
+                })
+                .map((card) => (
+                <div className="idea-card" key={card.name} style={{ position: 'relative', cursor: 'pointer' }} onClick={() => { setSelectedCandleIdea(card.name); memorialSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
+                  {candleCount[card.name] > 0 && (
+                    <div style={{ position: 'absolute', top: '8px', left: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 }}>
+                      {candleCount[card.name] > 1 && (
+                        <div style={{ background: 'var(--danger)', color: '#fff', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', marginBottom: '-8px' }}>
+                          {candleCount[card.name]}
+                        </div>
+                      )}
+                      <div style={{ fontSize: '20px', filter: 'drop-shadow(0 0 4px rgba(255, 100, 100, 0.6))' }}>🕯️</div>
+                    </div>
+                  )}
                   <div
                     className="idea-thumb"
                     style={{
                       background:
-                        card.name === 'Loja de Velas Aromáticas'
-                          ? 'linear-gradient(135deg, #2a1a1a, #3d2020)'
-                          : card.name === 'Canal de Produtividade'
-                            ? 'linear-gradient(135deg, #1a2a1a, #203520)'
-                            : card.name === 'Curso de Alemão B1'
-                              ? 'linear-gradient(135deg, #1a1a2a, #202040)'
-                              : card.name === 'Projeto Fitness'
-                                ? 'linear-gradient(135deg, #201a2a, #30203d)'
-                                : card.name === 'Podcast sobre Mindset'
-                                  ? 'linear-gradient(135deg, #1a2028, #20283d)'
-                                  : card.name === 'Aprender Aquarela'
-                                    ? 'linear-gradient(135deg, #28201a, #3d3020)'
-                                    : 'linear-gradient(135deg, #1e1a30, #282048)'
+                        card.name === 'Teste RIP Modal'
+                          ? 'linear-gradient(135deg, #2a1f3a, #3d2a4d)'
+                          : card.name === 'App de Delivery Gourmet'
+                            ? 'linear-gradient(135deg, #2a2a1a, #3d3820)'
+                            : card.name === 'Jogo Indie 2D'
+                              ? 'linear-gradient(135deg, #1a2a2a, #203535)'
+                              : card.name === 'Plataforma SaaS B2B'
+                                ? 'linear-gradient(135deg, #2a1a2a, #3d2040)'
+                                : card.name === 'Eco-Startup Sustentável'
+                                  ? 'linear-gradient(135deg, #1a2a1a, #203525)'
+                                  : card.name === 'Curso Online Premium'
+                                    ? 'linear-gradient(135deg, #2a1a3a, #3d2050)'
+                                    : card.name === 'Marketplace Imobiliário'
+                                      ? 'linear-gradient(135deg, #2a2a1f, #3d3d2a)'
+                                      : card.name === 'Franquia de Pizza Artesanal'
+                                        ? 'linear-gradient(135deg, #2a1f1a, #3d2820)'
+                                        : card.name === 'Agência de Viagens Alternativa'
+                                          ? 'linear-gradient(135deg, #1a2a3a, #203550)'
+                                          : card.name === 'Loja de Cosméticos Veganos'
+                                            ? 'linear-gradient(135deg, #2a1a3a, #3d2850)'
+                                            : card.name === 'Plataforma de E-books'
+                                              ? 'linear-gradient(135deg, #1a1a2a, #252550)'
+                                              : card.name === 'Loja de Velas Aromáticas'
+                                                ? 'linear-gradient(135deg, #2a1a1a, #3d2020)'
+                                                : card.name === 'Canal de Produtividade'
+                                                  ? 'linear-gradient(135deg, #1a2a1a, #203520)'
+                                                  : card.name === 'Curso de Alemão B1'
+                                                    ? 'linear-gradient(135deg, #1a1a2a, #202040)'
+                                                    : card.name === 'Projeto Fitness'
+                                                      ? 'linear-gradient(135deg, #201a2a, #30203d)'
+                                                      : card.name === 'Podcast sobre Mindset'
+                                                        ? 'linear-gradient(135deg, #1a2028, #20283d)'
+                                                        : card.name === 'Aprender Aquarela'
+                                                          ? 'linear-gradient(135deg, #28201a, #3d3020)'
+                                                          : 'linear-gradient(135deg, #1e1a30, #282048)'
                     }}
                   >
                     <span>{card.icon}</span>
-                    <div className="idea-rip">🪦 RIP</div>
+                    <button
+                      type="button"
+                      className="idea-rip"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRipClick(card);
+                      }}
+                    >
+                      🪦 RIP
+                    </button>
                   </div>
                   <div className="idea-body">
                     <div className="idea-name">{card.name}</div>
@@ -141,74 +490,6 @@ export default function App() {
                 </div>
               ))}
 
-            </div>
-
-            <div className="divider"></div>
-
-            <div className="sec-header">
-              <div className="sec-title">Memorial de uma ideia</div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button type="button" style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text2)', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>◀</button>
-                <button type="button" style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text2)', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>▶</button>
-                <button type="button" style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--danger)', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>💔</button>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '14px', marginBottom: '16px' }}>
-              <div
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #2a1a1a, #4a2828)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '36px',
-                  flexShrink: 0
-                }}
-              >
-                🕯️
-              </div>
-              <div>
-                <div className="memorial-name">Loja de Velas Aromáticas</div>
-                <div className="memorial-dates">2022 – 2022</div>
-                <div className="memorial-cause-label">Causa da morte</div>
-                <div className="memorial-cause-val">Pesquisa excessiva no Pinterest</div>
-                <div className="memorial-quote">"Só mais uma ideia que poderia ter mudado tudo."</div>
-              </div>
-            </div>
-
-            <div className="memorial-tabs">
-              {['Sobre', 'Linha do Tempo', 'Relíquias', 'Estatísticas'].map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  className={`mem-tab ${activeMemTab === tab ? 'active' : ''}`}
-                  onClick={() => setActiveMemTab(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            <div className="memorial-cols">
-              <div>
-                <div className="mem-col-title">Biografia</div>
-                <div className="mem-item">Nasceu de um surto de criatividade numa madrugada de domingo. Teve um início promissor, nome, logo, moodboard e até público-alvo imaginário.</div>
-              </div>
-              <div>
-                <div className="mem-col-title">Expectativa</div>
-                <div className="mem-item">💸 Independência financeira</div>
-                <div className="mem-item" style={{ marginTop: '4px' }}>🏷️ Marca autoral</div>
-                <div className="mem-item" style={{ marginTop: '4px' }}>🌿 Vida tranquila no campo</div>
-              </div>
-              <div>
-                <div className="mem-col-title">Realidade</div>
-                <div className="mem-item bad">✘ 0 vendas</div>
-                <div className="mem-item bad" style={{ marginTop: '4px' }}>✘ 14 abas abertas</div>
-                <div className="mem-item bad" style={{ marginTop: '4px' }}>✘ 3 carrinhos abandonados</div>
-              </div>
             </div>
           </div>
 
@@ -242,11 +523,189 @@ export default function App() {
                 <div style={{ width: `${survivalPct}%`, height: '100%', background: 'linear-gradient(90deg, var(--danger), #e88000)', borderRadius: '8px', transition: 'width 0.8s ease' }}></div>
               </div>
             </div>
+
+            <div className="curator-card" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '18px', marginBottom: '20px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '12px', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Curadoria diz</div>
+              <div className="curator-wrap">
+                <div className="curator-face">🎭</div>
+                <div>
+                  <div className="curator-q">"Não é fracasso. É coleção. O museu sempre terá espaço para mais um sonho."</div>
+                  <div className="curator-sig">- Curadora do Caos</div>
+                </div>
+              </div>
+            </div>
+
+            <div ref={rankingCardRef} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '18px', marginBottom: '20px', boxShadow: highlightRankingCard ? '0 0 30px rgba(155, 127, 244, 0.8), 0 0 60px rgba(155, 127, 244, 0.4)' : 'none', transition: 'box-shadow 0.3s ease' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <div className="sec-title rank-glitch-title" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }} data-text="Rankings do caos">Rankings do caos</div>
+                <div className="rank-live-badge"><span className="rank-live-dot"></span>AO VIVO</div>
+              </div>
+              <div className="rank-tabs">
+                {['Geral', 'Por categoria', 'Por causa da morte'].map((tab) => (
+                  <button key={tab} className={`rank-tab ${activeRankTab === tab ? 'active' : ''}`} type="button" onClick={() => setActiveRankTab(tab)}>{tab}</button>
+                ))}
+              </div>
+              {(() => {
+                const items = rankData[activeRankTab];
+                const top3 = items.slice(0, 3);
+                const rest = items.slice(3);
+                const maxCount = items[0].count;
+                const podiumOrder = [top3[1], top3[0], top3[2]];
+                const podiumHeights = [70, 90, 55];
+                const podiumColors = ['#a0a8b8', '#e8b86d', '#c87941'];
+                const podiumLabels = ['2º', '1º', '3º'];
+                return (
+                  <>
+                    <div className="rank-podium">
+                      {podiumOrder.map((item, i) => (
+                        <div key={item.name} className="rank-podium-item" style={{ '--podium-height': `${podiumHeights[i]}px`, '--podium-color': podiumColors[i] }}>
+                          <div className="rank-podium-avatar">{item.avatar}</div>
+                          <div className="rank-podium-name">{item.name}</div>
+                          <div className="rank-podium-count">{item.count.toLocaleString()}</div>
+                          <div className="rank-podium-base">
+                            <span className="rank-podium-pos" style={{ color: podiumColors[i] }}>{podiumLabels[i]}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {rest.map((item) => (
+                      <div key={item.name} className="rank-item rank-item-bar">
+                        <div className="rank-num">{item.pos}.</div>
+                        <div className="rank-avatar">{item.avatar}</div>
+                        <div className="rank-info">
+                          <div className="rank-name">{item.name}</div>
+                          <div className="rank-bar">
+                            <div className="rank-bar-fill" style={{ width: `${(item.count / maxCount) * 100}%` }}></div>
+                          </div>
+                        </div>
+                        <div className="rank-count" style={{ whiteSpace: 'nowrap', fontSize: '10px' }}>{item.count.toLocaleString()}</div>
+                      </div>
+                    ))}
+                  </>
+                );
+              })()}
+            </div>
           </div>
         </div>
 
+        <div style={{ padding: '24px', borderTop: '1px solid var(--border)' }}>
+          <div className="sec-header" ref={memorialSectionRef}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className="sec-title">Memorial de uma ideia</div>
+              {candleCount[selectedCandleIdea] > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(224, 96, 96, 0.2)', padding: '6px 12px', borderRadius: '20px' }}>
+                  <div style={{ fontSize: '16px' }}>🕯️</div>
+                  {candleCount[selectedCandleIdea] > 1 && (
+                    <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--danger)' }}>{candleCount[selectedCandleIdea]}</div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => handleRipClick(selectedIdea)}
+                style={{
+                  background: 'linear-gradient(135deg, #ff6060, #ff4444)',
+                  border: 'none',
+                  color: 'white',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(255, 96, 96, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              >
+                🪦 RIP
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '14px', marginBottom: '16px', position: 'relative' }}>
+              <div
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #2a1a1a, #4a2828)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '36px',
+                  flexShrink: 0
+                }}
+              >
+                {selectedIdea.icon}
+              </div>
+              <div>
+                <div className="memorial-name">{selectedIdea.name}</div>
+                <div className="memorial-dates">{selectedIdea.dates}</div>
+                <div className="memorial-cause-label">Causa da morte</div>
+                <div className="memorial-cause-val">{selectedIdea.cause}</div>
+                <div className="memorial-quote">"Só mais uma ideia que poderia ter mudado tudo."</div>
+              </div>
+            </div>
+
+            <div className="memorial-tabs">
+              {['Sobre', 'Linha do Tempo', 'Relíquias', 'Conquistas'].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  className={`mem-tab ${activeMemTab === tab ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveMemTab(tab);
+                    if (window.innerWidth < 768) {
+                      setTimeout(() => {
+                        const tabRefMap = {
+                          'Sobre': memorialSectionRef,
+                          'Linha do Tempo': timelineSectionRef,
+                          'Relíquias': reliquiarySectionRef,
+                          'Conquistas': achievementSectionRef
+                        };
+                        tabRefMap[tab].current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 100);
+                    }
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            <div className="memorial-cols" style={{ background: activeMemTab === 'Sobre' ? 'var(--bg3)' : 'transparent', padding: activeMemTab === 'Sobre' ? '12px' : '0', margin: activeMemTab === 'Sobre' ? '8px' : '0', borderRadius: activeMemTab === 'Sobre' ? 'var(--radius-sm)' : '0', boxShadow: activeMemTab === 'Sobre' ? '0 0 20px rgba(155, 127, 244, 0.6), 0 0 40px rgba(155, 127, 244, 0.3)' : 'none', transition: 'all 0.2s' }}>
+              <div>
+                <div className="mem-col-title">Biografia</div>
+                <div className="mem-item">Nasceu de um surto de criatividade numa madrugada de domingo. Teve um início promissor, nome, logo, moodboard e até público-alvo imaginário.</div>
+              </div>
+              <div>
+                <div className="mem-col-title">Expectativa</div>
+                <div className="mem-item">💸 Independência financeira</div>
+                <div className="mem-item" style={{ marginTop: '4px' }}>🏷️ Marca autoral</div>
+                <div className="mem-item" style={{ marginTop: '4px' }}>🌿 Vida tranquila no campo</div>
+              </div>
+              <div>
+                <div className="mem-col-title">Realidade</div>
+                <div className="mem-item bad">✘ 0 vendas</div>
+                <div className="mem-item bad" style={{ marginTop: '4px' }}>✘ 14 abas abertas</div>
+                <div className="mem-item bad" style={{ marginTop: '4px' }}>✘ 3 carrinhos abandonados</div>
+              </div>
+            </div>
+        </div>
+
         <div className="bottom-grid">
-          <section className="bottom-sec">
+          <section className="bottom-sec" ref={timelineSectionRef} style={{ background: activeMemTab === 'Linha do Tempo' ? 'var(--bg3)' : 'transparent', padding: activeMemTab === 'Linha do Tempo' ? '12px' : '20px', margin: activeMemTab === 'Linha do Tempo' ? '8px' : '0', borderRadius: activeMemTab === 'Linha do Tempo' ? 'var(--radius-sm)' : '0', boxShadow: activeMemTab === 'Linha do Tempo' ? '0 0 20px rgba(155, 127, 244, 0.6), 0 0 40px rgba(155, 127, 244, 0.3)' : 'none', transition: 'all 0.2s' }}>
             <div className="sec-header">
               <div className="sec-title" style={{ fontSize: '14px' }}>Linha do tempo</div>
             </div>
@@ -260,7 +719,7 @@ export default function App() {
             </div>
           </section>
 
-          <section className="bottom-sec">
+          <section className="bottom-sec" ref={reliquiarySectionRef} style={{ background: activeMemTab === 'Relíquias' ? 'var(--bg3)' : 'transparent', padding: activeMemTab === 'Relíquias' ? '12px' : '20px', margin: activeMemTab === 'Relíquias' ? '8px' : '0', borderRadius: activeMemTab === 'Relíquias' ? 'var(--radius-sm)' : '0', boxShadow: activeMemTab === 'Relíquias' ? '0 0 20px rgba(155, 127, 244, 0.6), 0 0 40px rgba(155, 127, 244, 0.3)' : 'none', transition: 'all 0.2s' }}>
             <div className="sec-header">
               <div className="sec-title" style={{ fontSize: '14px' }}>Relíquias encontradas</div>
             </div>
@@ -270,34 +729,11 @@ export default function App() {
               <div className="relic-item"><div className="relic-icon">🏷️</div><div className="relic-name">Rascunho do logo (nunca usado)</div></div>
               <div className="relic-item"><div className="relic-icon">🛒</div><div className="relic-name">Embalagens compradas por impulso</div></div>
             </div>
-            <button className="btn-outline" type="button" style={{ width: '100%', marginTop: '12px', fontSize: '12px' }}>Ver todas as relíquias</button>
           </section>
 
-          <section className="bottom-sec">
-            <div className="sec-header">
-              <div className="sec-title" style={{ fontSize: '14px' }}>Rankings do caos</div>
-            </div>
-            <div className="rank-tabs">
-              {['Geral', 'Por categoria', 'Por causa da morte'].map((tab) => (
-                <button
-                  key={tab}
-                  className={`rank-tab ${activeRankTab === tab ? 'active' : ''}`}
-                  type="button"
-                  onClick={() => setActiveRankTab(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            <div className="rank-item"><div className="rank-num">1.</div><div className="rank-avatar">👑</div><div className="rank-info"><div className="rank-name">Rainha dos Começos</div><div className="rank-count">142 ideias abandonadas</div></div></div>
-            <div className="rank-item"><div className="rank-num">2.</div><div className="rank-avatar">🐐</div><div className="rank-info"><div className="rank-name">Mestre da Procrastinação</div><div className="rank-count">97 ideias abandonadas</div></div></div>
-            <div className="rank-item"><div className="rank-num">3.</div><div className="rank-avatar">⚡</div><div className="rank-info"><div className="rank-name">Deus do Potencial</div><div className="rank-count">73 ideias abandonadas</div></div></div>
-            <div className="rank-item"><div className="rank-num">4.</div><div className="rank-avatar">🔮</div><div className="rank-info"><div className="rank-name">Imperador dos "Amanhãs"</div><div className="rank-count">65 ideias abandonadas</div></div></div>
-            <div className="rank-item"><div className="rank-num">5.</div><div className="rank-avatar">🧩</div><div className="rank-info"><div className="rank-name">Senhor das Abas Abertas</div><div className="rank-count">61 ideias abandonadas</div></div></div>
-            <button className="btn-outline" type="button" style={{ width: '100%', marginTop: '8px', fontSize: '12px' }}>Ver ranking completo</button>
-          </section>
+          <section className="bottom-sec" ref={rankingSectionRef} style={{ display: 'none' }} />
 
-          <section className="bottom-sec">
+          <section className="bottom-sec" ref={achievementSectionRef} style={{ background: activeMemTab === 'Conquistas' ? 'var(--bg3)' : 'transparent', padding: activeMemTab === 'Conquistas' ? '12px' : '20px', margin: activeMemTab === 'Conquistas' ? '8px' : '0', borderRadius: activeMemTab === 'Conquistas' ? 'var(--radius-sm)' : '0', boxShadow: activeMemTab === 'Conquistas' ? '0 0 20px rgba(155, 127, 244, 0.6), 0 0 40px rgba(155, 127, 244, 0.3)' : 'none', transition: 'all 0.2s' }}>
             <div className="sec-header">
               <div className="sec-title" style={{ fontSize: '14px' }}>Conquistas desbloqueadas</div>
             </div>
@@ -305,28 +741,28 @@ export default function App() {
             <div className="achievement"><div className="ach-medal">🛍</div><div><div className="ach-name">Comprou Antes de Fazer</div><div className="ach-desc">Investiu em itens antes de validar a ideia</div></div></div>
             <div className="achievement"><div className="ach-medal">🎴</div><div><div className="ach-name">Especialista em Tutoriais</div><div className="ach-desc">Assistiu 50+ tutoriais e não fez nada</div></div></div>
             <div className="achievement"><div className="ach-medal">🗂️</div><div><div className="ach-name">Mestre do Planejamento</div><div className="ach-desc">Planejou mais do que executou</div></div></div>
-            <button className="btn-outline" type="button" style={{ width: '100%', marginTop: '4px', fontSize: '12px' }}>Ver todas conquistas</button>
           </section>
 
-          <section className="bottom-sec">
-            <div className="mem-col-title" style={{ marginBottom: '12px' }}>Curadoria diz</div>
-            <div className="curator-wrap">
-              <div className="curator-face">🎭</div>
-              <div>
-                <div className="curator-q">"Não é fracasso. É coleção. O museu sempre terá espaço para mais um sonho."</div>
-                <div className="curator-sig">- Curadora do Caos</div>
-              </div>
-            </div>
-          </section>
         </div>
 
         <div className="footer-row">
           <section className="footer-widget">
             <div className="footer-title">🕯️ Homenagear uma ideia</div>
             <div className="footer-sub">Preste sua homenagem a este projeto que partiu cedo demais.</div>
-            <div className="candle-row">
-              <input className="candle-input" type="text" placeholder="Deixe uma mensagem..." />
-              <button className="btn-primary" type="button" style={{ whiteSpace: 'nowrap', fontSize: '12px', padding: '8px 14px' }}>Acender velinha</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <select
+                value={selectedCandleIdea}
+                onChange={(e) => setSelectedCandleIdea(e.target.value)}
+                className="form-select"
+                style={{ marginBottom: '0' }}
+              >
+                {museumCards.map((card) => (
+                  <option key={card.name} value={card.name}>
+                    {card.icon} {card.name}
+                  </option>
+                ))}
+              </select>
+              <button className="btn-primary" type="button" style={{ width: '100%', fontSize: '12px', padding: '8px 14px' }} onClick={handleLightCandle}>Acender velinha</button>
             </div>
           </section>
 
@@ -337,18 +773,49 @@ export default function App() {
           </section>
 
           <section className="footer-widget">
-            <div className="footer-title">💬 Mensagem da curadoria</div>
-            <div className="footer-sub">"Não é fracasso. É coleção. O museu sempre terá espaço para mais um sonho."</div>
-            <div style={{ fontSize: '11px', color: 'var(--text3)' }}>- Curadora do Caos</div>
-          </section>
-
-          <section className="footer-widget">
             <div className="footer-title">🔔 Receba alertas do museu</div>
             <div className="footer-sub">Novos achados, relíquias e verdades que você não pediu, mas precisa ouvir.</div>
             <div className="footer-input-row">
-              <input className="footer-input" type="email" placeholder="Seu melhor e-mail" />
-              <button className="btn-primary" type="button" style={{ fontSize: '12px', padding: '8px 14px' }}>Assinar</button>
+              <input
+                className="footer-input"
+                type="email"
+                placeholder="Seu melhor e-mail"
+                value={newsletterEmail}
+                onChange={(event) => {
+                  setNewsletterEmail(event.target.value);
+                  if (newsletterFeedback) {
+                    setNewsletterFeedback(null);
+                  }
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    handleNewsletterSubscribe();
+                  }
+                }}
+                disabled={newsletterLoading}
+              />
+              <button
+                className="btn-primary"
+                type="button"
+                onClick={handleNewsletterSubscribe}
+                disabled={newsletterLoading}
+                style={{ fontSize: '12px', padding: '8px 14px' }}
+              >
+                {newsletterLoading ? 'Enviando...' : 'Assinar'}
+              </button>
             </div>
+            {newsletterFeedback && (
+              <div
+                style={{
+                  marginTop: '8px',
+                  fontSize: '11px',
+                  color: newsletterFeedback.type === 'success' ? '#7fd6a9' : 'var(--danger)'
+                }}
+              >
+                {newsletterFeedback.message}
+              </div>
+            )}
           </section>
         </div>
       </main>
@@ -376,6 +843,71 @@ export default function App() {
       <FormModal isOpen={isFormModalOpen} onClose={closeModal}>
         <IdeaForm />
       </FormModal>
+
+      {isVideoModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}
+          onClick={() => setIsVideoModalOpen(false)}
+        >
+          <div
+            style={{
+              background: 'var(--bg)',
+              borderRadius: 'var(--radius)',
+              border: '1px solid var(--border)',
+              maxWidth: '800px',
+              width: '100%',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '16px', fontWeight: '600' }}>🕯️ Homenagem a {selectedCandleIdea}</div>
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text2)',
+                  fontSize: '20px',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setIsVideoModalOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ padding: '20px', flex: 1, overflow: 'auto' }}>
+              <video
+                width="100%"
+                height="500"
+                controls
+                autoPlay
+                style={{ borderRadius: 'var(--radius-sm)' }}
+              >
+                <source src="/src/images/Firefly A memorial candle slowly burning in a luxury dark museum. The golden flame flickers naturall.mp4" type="video/mp4" />
+                Seu navegador não suporta vídeo.
+              </video>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <RipModal
+        isOpen={isRipModalOpen}
+        onClose={() => setIsRipModalOpen(false)}
+        idea={ripTargetIdea}
+        onConfirm={handleRipConfirm}
+      />
 
     </div>
   );
