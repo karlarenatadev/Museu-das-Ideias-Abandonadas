@@ -29,9 +29,9 @@ export default function RipModal({ isOpen, onClose, idea, onConfirm }) {
     setShowSparkles(true);
   };
 
-  const handleCertificateClose = () => {
+  const handleCertificateClose = async () => {
     setShowCertificate(false);
-    onConfirm();
+    await onConfirm();
     onClose();
   };
 

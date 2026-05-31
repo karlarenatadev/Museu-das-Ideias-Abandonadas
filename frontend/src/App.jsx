@@ -8,6 +8,8 @@ import RipModal from './components/RipModal';
 import AuthScreen from './components/AuthScreen';
 import { lightCandle, listIdeas, reviveIdea, subscribeToAlerts } from './services/ideaService';
 import { authService } from './services/authService';
+import { playRandomAudio } from './services/audioRandomizer';
+import heroImage from './images/FA98EE2C-9D78-439E-BEC5-8D21ABE448C7.webp';
 
 const LOCAL_CANDLE_COUNTS_KEY = 'museum_candle_counts';
 const LOCAL_REVIVED_STATUS_KEY = 'museum_revived_status';
@@ -362,6 +364,8 @@ export default function App() {
   const handleShareMemorial = async () => {
     if (!selectedIdea) return;
 
+    playRandomAudio('gerar card para compartilhar');
+
     const shareData = {
       title: `Memorial de ${selectedIdea.name}`,
       text: `${selectedIdea.name} (${selectedIdea.dates}) - Causa da morte: ${selectedIdea.cause}`,
@@ -562,7 +566,7 @@ export default function App() {
         </header>
 
         <section className="hero">
-          <div className="hero-statue">🗿</div>
+          <img src={heroImage} alt="Museu das Ideias Abandonadas" className="hero-statue" />
           <div className="hero-inner">
             <div className="hero-tag">Bem-vindo ao</div>
             <h1>Museu das Ideias Abandonadas</h1>
@@ -714,6 +718,7 @@ export default function App() {
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
+                  playRandomAudio('abrir formulario');
                   setIsFormModalOpen(true);
                 }}
               >
