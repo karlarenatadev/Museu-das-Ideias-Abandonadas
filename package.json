@@ -4,6 +4,9 @@
   "description": "Museu das Ideias Abandonadas - Análise de ideias com IA",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "npm run dev --workspace=backend",
     "build": "npm run build --workspace=frontend",
