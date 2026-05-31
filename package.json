@@ -22,5 +22,9 @@
     "ai"
   ],
   "author": "Desenvolvedor",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.0",
+    "postcss": "^8.5.15"
+  }
 }
