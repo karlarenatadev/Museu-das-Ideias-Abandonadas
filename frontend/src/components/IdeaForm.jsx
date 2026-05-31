@@ -21,6 +21,13 @@ export default function IdeaForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validação básica
+    if (!formData.nome.trim() || !formData.categoria || !formData.motivo.trim()) {
+      setError('Por favor, preencha todos os campos obrigatórios.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setResult(null);
@@ -28,8 +35,17 @@ export default function IdeaForm() {
     try {
       const analysis = await analyzeIdea(formData);
       setResult(analysis);
+      
+      // Scroll para o resultado
+      setTimeout(() => {
+        const resultElement = document.querySelector('.analysis-result');
+        if (resultElement) {
+          resultElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Erro desconhecido ao processar a ideia.');
+      console.error('Erro completo:', err);
     } finally {
       setLoading(false);
     }
@@ -71,7 +87,11 @@ export default function IdeaForm() {
           {/* Nome da Ideia */}
           <div>
             <label className="block text-sm font-medium text-[#c4a8ff] mb-3">
+<<<<<<< HEAD
               Nome da Ideia *
+=======
+              Nome da Ideia <span className="text-[#e06060]">*</span>
+>>>>>>> karlarenata
             </label>
             <input
               type="text"
@@ -80,7 +100,11 @@ export default function IdeaForm() {
               onChange={handleChange}
               required
               disabled={loading}
+<<<<<<< HEAD
               className="w-full px-6 py-4 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] placeholder-[#6a5c8a] focus:outline-none focus:border-[#7c5ce8] transition-colors disabled:opacity-50"
+=======
+              className="w-full px-6 py-4 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] placeholder-[#6a5c8a] focus:outline-none focus:border-[#7c5ce8] focus:ring-2 focus:ring-[rgba(124,92,232,0.2)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+>>>>>>> karlarenata
               placeholder="Ex: App de delivery de sonhos"
             />
           </div>
@@ -88,7 +112,11 @@ export default function IdeaForm() {
           {/* Categoria */}
           <div>
             <label className="block text-sm font-medium text-[#c4a8ff] mb-3">
+<<<<<<< HEAD
               Categoria *
+=======
+              Categoria <span className="text-[#e06060]">*</span>
+>>>>>>> karlarenata
             </label>
             <select
               name="categoria"
@@ -96,7 +124,11 @@ export default function IdeaForm() {
               onChange={handleChange}
               required
               disabled={loading}
+<<<<<<< HEAD
               className="w-full px-6 py-4 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] focus:outline-none focus:border-[#7c5ce8] transition-colors disabled:opacity-50"
+=======
+              className="w-full px-6 py-4 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] focus:outline-none focus:border-[#7c5ce8] focus:ring-2 focus:ring-[rgba(124,92,232,0.2)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+>>>>>>> karlarenata
             >
               <option value="">Selecione uma categoria...</option>
               <option value="App">📱 App</option>
@@ -125,7 +157,7 @@ export default function IdeaForm() {
                 value={formData.empolgacao}
                 onChange={handleChange}
                 disabled={loading}
-                className="flex-1 h-2 bg-[#0f0b18] rounded-lg appearance-none cursor-pointer accent-[#7c5ce8] disabled:opacity-50"
+                className="flex-1 h-2 bg-[#0f0b18] rounded-lg appearance-none cursor-pointer accent-[#7c5ce8] disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <span className="text-xs text-[#6a5c8a]">🔥 Hype</span>
             </div>
@@ -134,7 +166,11 @@ export default function IdeaForm() {
           {/* Motivo do Abandono */}
           <div>
             <label className="block text-sm font-medium text-[#c4a8ff] mb-3">
+<<<<<<< HEAD
               Por que foi abandonada? *
+=======
+              Por que foi abandonada? <span className="text-[#e06060]">*</span>
+>>>>>>> karlarenata
             </label>
             <textarea
               name="motivo"
@@ -143,7 +179,11 @@ export default function IdeaForm() {
               required
               disabled={loading}
               rows="4"
+<<<<<<< HEAD
               className="w-full px-6 py-4 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] placeholder-[#6a5c8a] focus:outline-none focus:border-[#7c5ce8] transition-colors resize-none disabled:opacity-50"
+=======
+              className="w-full px-6 py-4 bg-[#0f0b18] border border-[rgba(180,140,255,0.2)] rounded-lg text-[#e8e0f5] placeholder-[#6a5c8a] focus:outline-none focus:border-[#7c5ce8] focus:ring-2 focus:ring-[rgba(124,92,232,0.2)] transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+>>>>>>> karlarenata
               placeholder="Conte-nos a triste (ou hilária) história do abandono..."
             />
           </div>
@@ -153,11 +193,15 @@ export default function IdeaForm() {
             <button
               type="submit"
               disabled={loading}
+<<<<<<< HEAD
               className="flex-1 bg-gradient-to-r from-[#7c5ce8] to-[#c4a8ff] text-white font-medium py-3.5 px-7 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+=======
+              className="flex-1 bg-gradient-to-r from-[#7c5ce8] to-[#c4a8ff] text-white font-medium py-3.5 px-7 rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transform duration-150"
+>>>>>>> karlarenata
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="animate-spin">⏳</span>
+                  <span className="animate-spin inline-block">⏳</span>
                   Analisando...
                 </span>
               ) : (
@@ -170,7 +214,11 @@ export default function IdeaForm() {
                 type="button"
                 onClick={handleReset}
                 disabled={loading}
+<<<<<<< HEAD
                 className="px-7 py-3.5 border border-[rgba(180,140,255,0.3)] text-[#c4a8ff] rounded-lg hover:bg-[rgba(180,140,255,0.1)] transition-colors disabled:opacity-50"
+=======
+                className="px-7 py-3.5 border border-[rgba(180,140,255,0.3)] text-[#c4a8ff] rounded-lg hover:bg-[rgba(180,140,255,0.1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transform duration-150"
+>>>>>>> karlarenata
               >
                 Nova Análise
               </button>
@@ -181,15 +229,22 @@ export default function IdeaForm() {
 
       {/* Erro */}
       {error && (
+<<<<<<< HEAD
         <div className="mb-6 rounded-xl border border-[rgba(224,96,96,0.35)] bg-[#2d1a1a] p-6">
+=======
+        <div className="mb-6 rounded-xl border border-[rgba(224,96,96,0.35)] bg-[#2d1a1a] p-6 animate-slideDown">
+>>>>>>> karlarenata
           <div className="flex items-start gap-3">
-            <span className="text-2xl">💀</span>
-            <div>
+            <span className="text-2xl flex-shrink-0">💀</span>
+            <div className="flex-1">
               <h3 className="text-[#e06060] font-semibold mb-1">
                 Erro ao Processar
               </h3>
               <p className="text-[#d4a8a8] text-sm">
                 {error}
+              </p>
+              <p className="text-[#a88888] text-xs mt-2">
+                💡 Dica: Certifique-se de que o backend está rodando em http://localhost:3001
               </p>
             </div>
           </div>
@@ -197,7 +252,11 @@ export default function IdeaForm() {
       )}
 
       {/* Resultado */}
-      {result && <AnalysisResult data={result} ideaName={formData.nome} />}
+      {result && (
+        <div className="analysis-result">
+          <AnalysisResult data={result} ideaName={formData.nome} />
+        </div>
+      )}
     </div>
   );
 }

@@ -35,16 +35,29 @@ app.use(express.json()); // Parse de JSON no body das requisições
 app.use(express.static(frontendPath));
 
 // Inicializa o cliente do Google Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+let genAI;
+let model;
+
+try {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY não configurada no arquivo .env');
+  }
+  genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  console.log('✅ Google Gemini inicializado com sucesso');
+} catch (error) {
+  console.error('❌ Erro ao inicializar Gemini:', error.message);
+  process.exit(1);
+}
 
 /**
  * Rota de health check para verificar se o servidor está rodando
  */
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
-    message: 'O Museu das Ideias Abandonadas está de portas abertas!' 
+    message: 'O Museu das Ideias Abandonadas está de portas abertas!',
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -105,12 +118,12 @@ Seja criativa, poética e levemente cruel - mas sempre termine com uma nota de e
 `;
 
     // Envia o prompt para o modelo Gemini
-    console.log('🤖 Enviando ideia para análise da Curadora do Caos...');
+    console.log(`🤖 Analisando ideia: "${nome}" (${categoria})`);
     const result = await model.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
     let aiText = response.text();
 
-    console.log('📥 Resposta bruta da IA:', aiText);
+    console.log('📥 Resposta bruta da IA recebida');
 
     // Remove possíveis marcações markdown que a IA possa ter adicionado
     aiText = aiText
@@ -131,7 +144,7 @@ Seja criativa, poética e levemente cruel - mas sempre termine com uma nota de e
     }
 
     // Retorna a análise limpa para o frontend
-    console.log('✅ Análise concluída com sucesso!');
+    console.log(`✅ Análise concluída: ${aiAnalysis.survival_percentage}% de sobrevivência`);
     res.status(200).json({
       success: true,
       data: {
@@ -143,10 +156,11 @@ Seja criativa, poética e levemente cruel - mas sempre termine com uma nota de e
 
   } catch (error) {
     // Log do erro para debugging
-    console.error('❌ Erro ao processar ideia:', error);
+    console.error('❌ Erro ao processar ideia:', error.message);
 
     // Retorna erro com mensagem temática
-    res.status(500).json({
+    const statusCode = error.message.includes('JSON') ? 500 : 500;
+    res.status(statusCode).json({
       success: false,
       error: 'A Curadora do Caos teve um colapso existencial tentando processar tanto fracasso de uma vez. Tente novamente em breve.',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -182,8 +196,10 @@ app.listen(PORT, () => {
 ║     Ambiente: ${process.env.NODE_ENV || 'development'}                      ║
 ║                                                           ║
 ║     Endpoints disponíveis:                                ║
-║     • GET  /health                                        ║
+║     • GET  /api/health                                    ║
 ║     • POST /api/analisar-ideia                            ║
+║                                                           ║
+║     Frontend: http://localhost:5173 (desenvolvimento)     ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
   `);
