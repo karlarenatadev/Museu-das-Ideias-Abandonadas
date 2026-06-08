@@ -18,16 +18,15 @@ O usuario acessa a aplicacao, faz login, registra uma ideia abandonada e recebe 
 
 ## Estrutura Geral
 
-```mermaid 
+```mermaid
 Flowchart TD
-
-A[Estrutura Geral] --> B[frontend - Aplicacao React/Vite] 
-A --> C[backend/API Express]
-C --> C1[src/           # Backend estruturado com rotas, services e middlewares]
-C --> C2[server.js      # Backend legado/simples mantido no historico do projeto]
-A --> D[docs/              # Documentacao de deploy, ambiente e handoff]
-A --> E[package.json       # Scripts da raiz com workspaces]
-A --> F[package-lock.json]
+A[Estrutura Geral] --> B[frontend/Aplicacao React/Vite] 
+A[Estrutura Geral] --> C[backend/API Express]
+C --> C1[src/Backend estruturado com rotas, services e middlewares]
+C --> C2[server.js /Backend legado/simples mantido no historico do projeto]
+A[Estrutura Geral] --> D[docs/Documentacao de deploy, ambiente e handoff]
+A[Estrutura Geral] --> E[package.json /Scripts da raiz com workspaces]
+A[Estrutura Geral] --> F[package-lock.json]
 ```
 
 ````text
