@@ -18,8 +18,19 @@ O usuario acessa a aplicacao, faz login, registra uma ideia abandonada e recebe 
 
 ## Estrutura Geral
 
-```text
-.
+```mermaid 
+
+A --> B[frontend - Aplicacao React/Vite] 
+A --> C[backend/           # API Express]
+C --> G[src/           # Backend estruturado com rotas, services e middlewares]
+C --> H[server.js      # Backend legado/simples mantido no historico do projeto]
+A --> D[docs/              # Documentacao de deploy, ambiente e handoff]
+A --> E[package.json       # Scripts da raiz com workspaces]
+A --> F[package-lock.json]
+```
+
+````text
+
 ├── frontend/          # Aplicacao React/Vite
 ├── backend/           # API Express
 │   ├── src/           # Backend estruturado com rotas, services e middlewares
